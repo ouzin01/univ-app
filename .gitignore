@@ -1,0 +1,25 @@
+# Java / Spring Boot
+**/target/
+**/.mvn/
+**/mvnw
+**/mvnw.cmd
+*.jar
+*.war
+
+# Node / Angular
+**/node_modules/
+**/.angular/
+**/dist/
+
+# IDE
+.vscode/settings.json
+**/.idea/
+**/*.iml
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Env
+**/.env
+**/application-secret.properties
