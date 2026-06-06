@@ -63,4 +63,10 @@ export class NavbarComponent implements OnInit {
   logout(): void {
     this.authService.logout();
   }
+
+voirNotifications(): void {
+  this.showNotifications = false;
+  this.router.navigate(['/communication'], { queryParams: { tab: 3 } });
+}
+
 }

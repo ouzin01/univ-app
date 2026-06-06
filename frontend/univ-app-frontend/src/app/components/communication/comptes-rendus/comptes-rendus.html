@@ -4,32 +4,26 @@
       <img src="logo.png" alt="UNCHK Logo" class="logo">
     </div>
     <mat-nav-list>
-      <mat-list-item (click)="retour()">
-        <mat-icon matListItemIcon>dashboard</mat-icon>
-        <span matListItemTitle>Tableau de bord</span>
-      </mat-list-item>
-      <mat-list-item class="active-link">
-        <mat-icon matListItemIcon>campaign</mat-icon>
-        <span matListItemTitle>Communication</span>
+      <mat-list-item *ngFor="let item of menuItems"
+        [routerLink]="item.route"
+        routerLinkActive="active-link"
+        [routerLinkActiveOptions]="{exact: item.route === '/admin'}">
+        <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+        <span matListItemTitle>{{ item.label }}</span>
       </mat-list-item>
     </mat-nav-list>
   </mat-sidenav>
 
   <mat-sidenav-content>
     <mat-toolbar class="toolbar">
-      <button mat-icon-button (click)="retour()">
-        <mat-icon>arrow_back</mat-icon>
-      </button>
+      <span class="spacer"></span>
       <span class="toolbar-title">Communication</span>
       <span class="spacer"></span>
-      <button mat-raised-button class="add-btn" (click)="showForm = !showForm">
-        <mat-icon>add</mat-icon> Nouveau
-      </button>
+      <app-navbar></app-navbar>
     </mat-toolbar>
 
     <div class="content">
 
-      <!-- STATS -->
       <div class="stats-grid">
         <div class="stat-card" *ngFor="let stat of stats">
           <div class="stat-content">
@@ -42,16 +36,12 @@
         </div>
       </div>
 
-      <!-- CONTAINER PRINCIPAL -->
       <div class="comm-container">
-
-        <!-- TABS -->
         <mat-tab-group [(selectedIndex)]="activeTab" class="main-tabs">
 
           <!-- TAB 1 : COMPTES RENDUS -->
           <mat-tab label="Comptes rendus">
 
-            <!-- FORM -->
             <div class="form-section" *ngIf="showForm && activeTab === 0">
               <h3 class="form-title">
                 <mat-icon>add_circle</mat-icon> Nouveau compte rendu
@@ -86,7 +76,6 @@
               </form>
             </div>
 
-            <!-- FILTRES -->
             <div class="filters-bar">
               <div class="search-box">
                 <mat-icon>search</mat-icon>
@@ -101,9 +90,349 @@
               </div>
             </div>
 
-            <!-- LISTE -->
-            <div class="cr-grid">
-              <div class="cr-card" *ngFor="let cr of filteredComptesRendus">
+            <!-- REUNIONS -->
+            <div class="reunions-grid" *ngIf="filterType === 'REUNION'">
+              <div class="reunion-col">
+                <div class="reunion-col-header passees">
+                  <mat-icon>history</mat-icon>
+                  <h3>Réunions passées</h3>
+                  <span class="count-badge">{{ reunionsPassees.length }}</span>
+                </div>
+                <div class="cr-grid-inner">
+                  <div class="cr-card" *ngFor="let cr of reunionsPassees">
+                    <div class="cr-icon reunion"><mat-icon>groups</mat-icon></div>
+                    <div class="cr-info">
+                      <h3>{{ cr.titre }}</h3>
+                      <p>{{ cr.dateCreation | date:'dd MMM yyyy' }}</p>
+                      <span class="auteur">Par {{ cr.auteur }}</span>
+                    </div>
+                    <div class="cr-actions">
+                      <button mat-icon-button matTooltip="Télécharger PDF" (click)="telechargerPDF(cr)">
+                        <mat-icon>picture_as_pdf</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="empty-state" *ngIf="reunionsPassees.length === 0">
+                    <mat-icon>event_busy</mat-icon>
+                    <p>Aucune réunion passée</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="reunion-col">
+                <div class="reunion-col-header avenir">
+                  <mat-icon>event</mat-icon>
+                  <h3>Réunions à venir</h3>
+                  <span class="count-badge avenir">{{ reunionsAVenir.length }}</span>
+                </div>
+                <div class="cr-grid-inner">
+                  <div class="cr-card avenir-card" *ngFor="let cr of reunionsAVenir">
+                    <div class="cr-icon webinaire"><mat-icon>groups</mat-icon></div>
+                    <div class="cr-info">
+                      <h3>{{ cr.titre }}</h3>
+                      <p>{{ cr.dateCreation | date:'dd MMM yyyy' }}</p>
+                      <span class="auteur">Par {{ cr.auteur }}</span>
+                    </div>
+                    <div class="cr-actions">
+                      <button mat-icon-button
+                        [class.rappel-actif]="rappelsActives.has(cr.id)"
+                        (click)="toggleRappel(cr.id)"
+                        [matTooltip]="rappelsActives.has(cr.id) ? 'Rappel activé' : 'Activer rappel'">
+                        <mat-icon>{{ rappelsActives.has(cr.id) ? 'notifications_active' : 'notifications_none' }}</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="empty-state" *ngIf="reunionsAVenir.length === 0">
+                    <mat-icon>event_available</mat-icon>
+                    <p>Aucune réunion planifiée</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- RENCONTRES -->
+            <div class="reunions-grid" *ngIf="filterType === 'RENCONTRE'">
+              <div class="reunion-col">
+                <div class="reunion-col-header passees">
+                  <mat-icon>history</mat-icon>
+                  <h3>Rencontres passées</h3>
+                  <span class="count-badge">{{ rencontresPassees.length }}</span>
+                </div>
+                <div class="cr-grid-inner">
+                  <div class="cr-card" *ngFor="let cr of rencontresPassees">
+                    <div class="cr-icon rencontre"><mat-icon>handshake</mat-icon></div>
+                    <div class="cr-info">
+                      <h3>{{ cr.titre }}</h3>
+                      <p>{{ cr.dateCreation | date:'dd MMM yyyy' }}</p>
+                      <span class="auteur">Par {{ cr.auteur }}</span>
+                    </div>
+                    <div class="cr-actions">
+                      <button mat-icon-button matTooltip="Télécharger PDF" (click)="telechargerPDF(cr)">
+                        <mat-icon>picture_as_pdf</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="empty-state" *ngIf="rencontresPassees.length === 0">
+                    <mat-icon>event_busy</mat-icon>
+                    <p>Aucune rencontre passée</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="reunion-col">
+                <div class="reunion-col-header avenir">
+                  <mat-icon>event</mat-icon>
+                  <h3>Rencontres à venir</h3>
+                  <span class="count-badge avenir">{{ rencontresAVenir.length }}</span>
+                </div>
+                <div class="cr-grid-inner">
+                  <div class="cr-card avenir-card" *ngFor="let cr of rencontresAVenir">
+                    <div class="cr-icon rencontre"><mat-icon>handshake</mat-icon></div>
+                    <div class="cr-info">
+                      <h3>{{ cr.titre }}</h3>
+                      <p>{{ cr.dateCreation | date:'dd MMM yyyy' }}</p>
+                      <span class="auteur">Par {{ cr.auteur }}</span>
+                    </div>
+                    <div class="cr-actions">
+                      <button class="participe-btn"
+                        [class.actif]="participations.has(cr.id)"
+                        (click)="toggleParticipation(cr.id)">
+                        <mat-icon>{{ participations.has(cr.id) ? 'check_circle' : 'person_add' }}</mat-icon>
+                        {{ participations.has(cr.id) ? 'Inscrit' : 'Je participe' }}
+                      </button>
+                    </div>
+                  </div>
+                  <div class="empty-state" *ngIf="rencontresAVenir.length === 0">
+                    <mat-icon>event_available</mat-icon>
+                    <p>Aucune rencontre planifiée</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SEMINAIRES -->
+            <div class="reunions-grid" *ngIf="filterType === 'SEMINAIRE'">
+              <div class="reunion-col">
+                <div class="reunion-col-header passees">
+                  <mat-icon>history</mat-icon>
+                  <h3>Séminaires passés</h3>
+                  <span class="count-badge">{{ seminairesPassees.length }}</span>
+                </div>
+                <div class="cr-grid-inner">
+                  <div class="cr-card" *ngFor="let cr of seminairesPassees">
+                    <div class="cr-icon seminaire"><mat-icon>school</mat-icon></div>
+                    <div class="cr-info">
+                      <h3>{{ cr.titre }}</h3>
+                      <p>{{ cr.dateCreation | date:'dd MMM yyyy' }}</p>
+                      <span class="auteur">Par {{ cr.auteur }}</span>
+                    </div>
+                    <div class="cr-actions">
+                      <button mat-icon-button matTooltip="Télécharger PDF" (click)="telechargerPDF(cr)">
+                        <mat-icon>picture_as_pdf</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="empty-state" *ngIf="seminairesPassees.length === 0">
+                    <mat-icon>event_busy</mat-icon>
+                    <p>Aucun séminaire passé</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="reunion-col">
+                <div class="reunion-col-header avenir">
+                  <mat-icon>event</mat-icon>
+                  <h3>Séminaires à venir</h3>
+                  <span class="count-badge avenir">{{ seminairesAVenir.length }}</span>
+                </div>
+                <div class="cr-grid-inner">
+                  <div class="cr-card avenir-card" *ngFor="let cr of seminairesAVenir">
+                    <div class="cr-icon seminaire"><mat-icon>school</mat-icon></div>
+                    <div class="cr-info">
+                      <h3>{{ cr.titre }}</h3>
+                      <p>{{ cr.dateCreation | date:'dd MMM yyyy' }}</p>
+                      <span class="auteur">Par {{ cr.auteur }}</span>
+                    </div>
+                    <div class="cr-actions">
+                      <button mat-icon-button
+                        [class.rappel-actif]="rappelsActives.has(cr.id)"
+                        (click)="toggleRappel(cr.id)"
+                        [matTooltip]="rappelsActives.has(cr.id) ? 'Rappel activé' : 'Activer rappel'">
+                        <mat-icon>{{ rappelsActives.has(cr.id) ? 'notifications_active' : 'notifications_none' }}</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="empty-state" *ngIf="seminairesAVenir.length === 0">
+                    <mat-icon>event_available</mat-icon>
+                    <p>Aucun séminaire planifié</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- WEBINAIRES -->
+<div class="reunions-grid" *ngIf="filterType === 'WEBINAIRE'">
+  <div class="reunion-col">
+    <div class="reunion-col-header passees">
+      <mat-icon>history</mat-icon>
+      <h3>Webinaires passés</h3>
+      <span class="count-badge">{{ webinairesPassees.length }}</span>
+    </div>
+    <div class="cr-grid-inner">
+      <div class="cr-card" *ngFor="let cr of webinairesPassees">
+        <div class="cr-icon webinaire"><mat-icon>videocam</mat-icon></div>
+        <div class="cr-info">
+          <h3>{{ cr.titre }}</h3>
+          <p>{{ cr.dateCreation | date:'dd MMM yyyy' }}</p>
+          <span class="auteur">Par {{ cr.auteur }}</span>
+        </div>
+        <div class="cr-actions">
+          <button mat-icon-button matTooltip="Télécharger PDF" (click)="telechargerPDF(cr)">
+            <mat-icon>picture_as_pdf</mat-icon>
+          </button>
+        </div>
+      </div>
+      <div class="empty-state" *ngIf="webinairesPassees.length === 0">
+        <mat-icon>event_busy</mat-icon>
+        <p>Aucun webinaire passé</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="reunion-col">
+    <div class="reunion-col-header avenir">
+      <mat-icon>event</mat-icon>
+      <h3>Webinaires à venir</h3>
+      <span class="count-badge avenir">{{ webinairesAVenir.length }}</span>
+    </div>
+    <div class="cr-grid-inner">
+      <div class="cr-card avenir-card" *ngFor="let cr of webinairesAVenir">
+        <div class="cr-icon webinaire"><mat-icon>videocam</mat-icon></div>
+        <div class="cr-info">
+          <h3>{{ cr.titre }}</h3>
+          <p>{{ cr.dateCreation | date:'dd MMM yyyy' }}</p>
+          <span class="auteur">Par {{ cr.auteur }}</span>
+        </div>
+        <div class="cr-actions">
+          <button mat-icon-button
+            [class.rappel-actif]="rappelsActives.has(cr.id)"
+            (click)="toggleRappel(cr.id)"
+            [matTooltip]="rappelsActives.has(cr.id) ? 'Rappel activé' : 'Activer rappel'">
+            <mat-icon>{{ rappelsActives.has(cr.id) ? 'notifications_active' : 'notifications_none' }}</mat-icon>
+          </button>
+        </div>
+      </div>
+      <div class="empty-state" *ngIf="webinairesAVenir.length === 0">
+        <mat-icon>event_available</mat-icon>
+        <p>Aucun webinaire planifié</p>
+      </div>
+    </div>
+  </div>
+</div>
+            <!-- CONSEIL UNIVERSITE -->
+<div class="reunions-grid" *ngIf="filterType === 'CONSEIL_UNIVERSITE'">
+  <div class="reunion-col">
+    <div class="reunion-col-header passees">
+      <mat-icon>history</mat-icon>
+      <h3>Sessions passées</h3>
+      <span class="count-badge">{{ conseilsPassees.length }}</span>
+    </div>
+    <div class="cr-grid-inner">
+      <div class="conseil-card" *ngFor="let cr of conseilsPassees">
+        <div class="conseil-header">
+          <div class="cr-icon conseil"><mat-icon>account_balance</mat-icon></div>
+          <div class="conseil-title">
+            <h3>{{ cr.titre }}</h3>
+            <span class="auteur">Par {{ cr.auteur }}</span>
+          </div>
+          <span class="conseil-statut cloture">{{ cr.statut || 'Clôturé' }}</span>
+        </div>
+        <div class="conseil-details">
+          <div class="conseil-detail-item">
+            <mat-icon>calendar_today</mat-icon>
+            <span>{{ cr.dateCreation | date:'dd MMM yyyy' }}</span>
+          </div>
+          <div class="conseil-detail-item" *ngIf="cr.ordre_jour">
+            <mat-icon>list_alt</mat-icon>
+            <span>{{ cr.ordre_jour }}</span>
+          </div>
+          <div class="conseil-detail-item" *ngIf="cr.participants">
+            <mat-icon>people</mat-icon>
+            <span>{{ cr.participants }} participants</span>
+          </div>
+        </div>
+        <div class="conseil-footer">
+          <button mat-stroked-button class="conseil-btn" matTooltip="Télécharger PDF" (click)="telechargerPDF(cr)">
+            <mat-icon>picture_as_pdf</mat-icon>
+            Télécharger PV
+          </button>
+          <button mat-stroked-button class="conseil-btn">
+            <mat-icon>visibility</mat-icon>
+            Voir détails
+          </button>
+        </div>
+      </div>
+      <div class="empty-state" *ngIf="conseilsPassees.length === 0">
+        <mat-icon>event_busy</mat-icon>
+        <p>Aucune session passée</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="reunion-col">
+    <div class="reunion-col-header avenir">
+      <mat-icon>event</mat-icon>
+      <h3>Sessions à venir</h3>
+      <span class="count-badge avenir">{{ conseilsAVenir.length }}</span>
+    </div>
+    <div class="cr-grid-inner">
+      <div class="conseil-card avenir" *ngFor="let cr of conseilsAVenir">
+        <div class="conseil-header">
+          <div class="cr-icon conseil"><mat-icon>account_balance</mat-icon></div>
+          <div class="conseil-title">
+            <h3>{{ cr.titre }}</h3>
+            <span class="auteur">Par {{ cr.auteur }}</span>
+          </div>
+          <span class="conseil-statut planifie">{{ cr.statut || 'Planifié' }}</span>
+        </div>
+        <div class="conseil-details">
+          <div class="conseil-detail-item">
+            <mat-icon>calendar_today</mat-icon>
+            <span>{{ cr.dateCreation | date:'dd MMM yyyy' }}</span>
+          </div>
+          <div class="conseil-detail-item" *ngIf="cr.ordre_jour">
+            <mat-icon>list_alt</mat-icon>
+            <span>{{ cr.ordre_jour }}</span>
+          </div>
+          <div class="conseil-detail-item" *ngIf="cr.participants">
+            <mat-icon>people</mat-icon>
+            <span>{{ cr.participants }} participants prévus</span>
+          </div>
+        </div>
+        <div class="conseil-footer">
+          <button mat-icon-button
+            [class.rappel-actif]="rappelsActives.has(cr.id)"
+            (click)="toggleRappel(cr.id)"
+            [matTooltip]="rappelsActives.has(cr.id) ? 'Rappel activé' : 'Activer rappel'">
+            <mat-icon>{{ rappelsActives.has(cr.id) ? 'notifications_active' : 'notifications_none' }}</mat-icon>
+          </button>
+          <button mat-stroked-button class="conseil-btn">
+            <mat-icon>visibility</mat-icon>
+            Voir ordre du jour
+          </button>
+        </div>
+      </div>
+      <div class="empty-state" *ngIf="conseilsAVenir.length === 0">
+        <mat-icon>event_available</mat-icon>
+        <p>Aucune session planifiée</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+            <!-- AUTRES DOCUMENTS -->
+            <div class="cr-grid" *ngIf="filterType !== 'REUNION' && filterType !== 'RENCONTRE' && filterType !== 'SEMINAIRE' && filterType !== 'WEBINAIRE' && filterType !== 'CONSEIL_UNIVERSITE'">
+              <div class="cr-card" [class.non-lu]="!cr.estPublie" *ngFor="let cr of autresDocuments">
                 <div class="cr-icon" [ngClass]="getTypeColor(cr.typeInstance)">
                   <mat-icon>{{ getTypeIcon(cr.typeInstance) }}</mat-icon>
                 </div>
@@ -112,136 +441,329 @@
                   <p>{{ cr.typeInstance }} — {{ cr.dateCreation | date:'dd MMM yyyy' }}</p>
                   <span class="auteur">Par {{ cr.auteur }}</span>
                 </div>
-                <span class="status-badge" [class.publie]="cr.estPublie" [class.brouillon]="!cr.estPublie">
-                  {{ cr.estPublie ? 'Publié' : 'Brouillon' }}
-                </span>
                 <div class="cr-actions">
-                  <button mat-icon-button matTooltip="Voir"><mat-icon>visibility</mat-icon></button>
-                  <button mat-icon-button matTooltip="Télécharger"><mat-icon>download</mat-icon></button>
-                  <button class="publish-btn" *ngIf="!cr.estPublie" (click)="publierCR(cr.id)">Publier</button>
+                  <span class="status-lu" [class.lu]="cr.estPublie" [class.non-lu]="!cr.estPublie">
+                    {{ cr.estPublie ? 'Lu' : 'Non lu' }}
+                  </span>
+                  <button mat-icon-button matTooltip="Télécharger PDF" (click)="telechargerPDF(cr)">
+                    <mat-icon>picture_as_pdf</mat-icon>
+                  </button>
                 </div>
               </div>
-              <div class="empty-state" *ngIf="filteredComptesRendus.length === 0">
+              <div class="empty-state" *ngIf="autresDocuments.length === 0 && filterType !== 'TOUS'">
                 <mat-icon>description</mat-icon>
-                <p>Aucun compte rendu trouvé</p>
+                <p>Aucun document trouvé</p>
               </div>
             </div>
+
           </mat-tab>
 
           <!-- TAB 2 : CIRCULAIRES -->
-          <mat-tab label="Circulaires">
+<mat-tab label="Circulaires">
 
-            <div class="form-section" *ngIf="showForm && activeTab === 1">
-              <h3 class="form-title"><mat-icon>add_circle</mat-icon> Nouvelle circulaire</h3>
-              <form [formGroup]="circulaireForm" (ngSubmit)="submitCirculaire()">
-                <div class="form-row">
-                  <mat-form-field appearance="outline">
-                    <mat-label>Titre *</mat-label>
-                    <input matInput formControlName="titre">
-                  </mat-form-field>
-                  <mat-form-field appearance="outline">
-                    <mat-label>Destinataires *</mat-label>
-                    <mat-select formControlName="destinataire">
-                      <mat-option *ngFor="let d of typesDestinataire" [value]="d">{{ d }}</mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-                <mat-form-field appearance="outline" class="full-width">
-                  <mat-label>Auteur *</mat-label>
-                  <input matInput formControlName="auteur">
-                </mat-form-field>
-                <mat-form-field appearance="outline" class="full-width">
-                  <mat-label>Contenu *</mat-label>
-                  <textarea matInput formControlName="contenu" rows="4"></textarea>
-                </mat-form-field>
-                <div class="form-actions">
-                  <button mat-stroked-button type="button" (click)="showForm = false">Annuler</button>
-                  <button mat-raised-button class="save-btn" type="submit">
-                    <mat-icon>save</mat-icon> Enregistrer
-                  </button>
-                </div>
-              </form>
-            </div>
+  <div class="form-section" *ngIf="showForm && activeTab === 1">
+    <h3 class="form-title"><mat-icon>add_circle</mat-icon> Nouvelle circulaire</h3>
+    <form [formGroup]="circulaireForm" (ngSubmit)="submitCirculaire()">
+      <div class="form-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Titre *</mat-label>
+          <input matInput formControlName="titre">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Destinataires *</mat-label>
+          <mat-select formControlName="destinataire">
+            <mat-option *ngFor="let d of typesDestinataire" [value]="d">{{ d }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Auteur *</mat-label>
+        <input matInput formControlName="auteur">
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Contenu *</mat-label>
+        <textarea matInput formControlName="contenu" rows="4"></textarea>
+      </mat-form-field>
+      <div class="form-actions">
+        <button mat-stroked-button type="button" (click)="showForm = false">Annuler</button>
+        <button mat-raised-button class="save-btn" type="submit">
+          <mat-icon>save</mat-icon> Enregistrer
+        </button>
+      </div>
+    </form>
+  </div>
 
-            <div class="cr-grid" style="margin-top: 16px;">
-              <div class="cr-card" *ngFor="let c of circulaires">
-                <div class="cr-icon conseil">
-                  <mat-icon>campaign</mat-icon>
-                </div>
-                <div class="cr-info">
-                  <h3>{{ c.titre }}</h3>
-                  <p>{{ c.destinataire }} — {{ c.dateCreation | date:'dd MMM yyyy' }}</p>
-                  <span class="auteur">Par {{ c.auteur }}</span>
-                </div>
-                <span class="status-badge" [class.publie]="c.estPublie" [class.brouillon]="!c.estPublie">
-                  {{ c.estPublie ? 'Publié' : 'Brouillon' }}
-                </span>
-                <div class="cr-actions">
-                  <button mat-icon-button matTooltip="Voir"><mat-icon>visibility</mat-icon></button>
-                  <button class="publish-btn" *ngIf="!c.estPublie" (click)="publierCirculaire(c.id)">Publier</button>
-                </div>
-              </div>
-              <div class="empty-state" *ngIf="circulaires.length === 0">
-                <mat-icon>campaign</mat-icon>
-                <p>Aucune circulaire</p>
-              </div>
-            </div>
-          </mat-tab>
+  <div class="filters-bar">
+    <div class="search-box">
+      <mat-icon>search</mat-icon>
+      <input type="text" placeholder="Rechercher une circulaire..." [(ngModel)]="searchCirculaire">
+    </div>
+    <div class="filter-chips">
+      <button class="filter-chip" [class.active]="filtreDestinataire === 'TOUS'" (click)="filtreDestinataire = 'TOUS'">Tous</button>
+      <button class="filter-chip" [class.active]="filtreDestinataire === 'ETUDIANTS'" (click)="filtreDestinataire = 'ETUDIANTS'">Étudiants</button>
+      <button class="filter-chip" [class.active]="filtreDestinataire === 'ENSEIGNANTS'" (click)="filtreDestinataire = 'ENSEIGNANTS'">Enseignants</button>
+      <button class="filter-chip" [class.active]="filtreDestinataire === 'ADMINISTRATION'" (click)="filtreDestinataire = 'ADMINISTRATION'">Administration</button>
+    </div>
+  </div>
 
-          <!-- TAB 3 : ARCHIVES -->
-          <mat-tab label="Archives">
-            <div class="doc-grid">
-              <div class="doc-card" *ngFor="let doc of documents">
-                <div class="doc-header">
-                  <mat-icon class="doc-icon" [style.color]="doc.color">{{ doc.icon }}</mat-icon>
-                  <span class="acces-badge" [ngClass]="getAccesColor(doc.acces)">{{ doc.acces }}</span>
-                </div>
-                <h4 class="doc-name">{{ doc.nom }}</h4>
-                <p class="doc-meta">{{ doc.type }} · {{ doc.taille }} · {{ doc.date }}</p>
-                <div class="doc-actions">
-                  <button mat-icon-button matTooltip="Télécharger"><mat-icon>download</mat-icon></button>
-                  <button mat-icon-button matTooltip="Voir"><mat-icon>visibility</mat-icon></button>
-                </div>
-              </div>
-            </div>
-          </mat-tab>
+  <div class="reunions-grid">
 
-          <!-- TAB 4 : NOTIFICATIONS -->
-          <mat-tab>
-            <ng-template mat-tab-label>
-              Notifications
-              <span class="notif-count" *ngIf="stats[3].value > 0">{{ stats[3].value }}</span>
-            </ng-template>
-            <div class="notif-toolbar">
-              <h3>Centre de notifications</h3>
-              <button mat-stroked-button (click)="marquerTousLus()">
-                <mat-icon>done_all</mat-icon> Tout marquer lu
-              </button>
+    <!-- LUES (gauche) -->
+    <div class="reunion-col">
+      <div class="reunion-col-header avenir" style="background: #e8f5e9;">
+        <mat-icon style="color: #2e7d32;">mark_email_read</mat-icon>
+        <h3 style="color: #2e7d32;">Lues</h3>
+        <span class="count-badge" style="background: #2e7d32;">{{ circulairesLues.length }}</span>
+      </div>
+      <div class="cr-grid-inner">
+        <div class="circulaire-card lue" *ngFor="let c of circulairesLues">
+          <div class="circ-top">
+            <div class="circ-icon lue"><mat-icon>campaign</mat-icon></div>
+            <div class="circ-info">
+              <h4>{{ c.titre }}</h4>
+              <span class="circ-auteur">{{ c.auteur }}</span>
             </div>
-            <div class="notif-list">
-              <div class="notif-item" *ngFor="let n of notifications"
-                [class.unread]="!n.lu" (click)="marquerLu(n)">
-                <div class="notif-dot" [class.unread]="!n.lu"></div>
-                <div class="notif-content">
-                  <p class="notif-text">
-                    <span *ngIf="n.type === 'compte-rendu'">Compte rendu — </span>
-                    <span *ngIf="n.type === 'circulaire'">Circulaire — </span>
-                    <span *ngIf="n.type === 'document'">Document — </span>
-                    <strong>{{ n.titre }}</strong>
-                  </p>
-                  <span class="notif-time">{{ n.time | date:'dd MMM yyyy HH:mm' }}</span>
-                </div>
-                <span class="notif-badge" *ngIf="!n.lu">Nouveau</span>
-              </div>
-              <div class="empty-state" *ngIf="notifications.length === 0">
-                <mat-icon>notifications_none</mat-icon>
-                <p>Aucune notification</p>
-              </div>
-            </div>
-          </mat-tab>
-
-        </mat-tab-group>
+            <span class="priorite-badge" [ngClass]="c.priorite">{{ c.priorite }}</span>
+          </div>
+          <p class="circ-resume">{{ c.resume }}</p>
+          <div class="circ-meta">
+            <span><mat-icon>calendar_today</mat-icon>{{ c.dateCreation | date:'dd MMM yyyy' }}</span>
+            <span><mat-icon>people</mat-icon>{{ c.destinataire }}</span>
+          </div>
+          <div class="circ-actions">
+            <button class="circ-btn pdf" (click)="telechargerCirculairePDF(c)">
+              <mat-icon>picture_as_pdf</mat-icon> PDF
+            </button>
+            <button class="circ-btn voir">
+              <mat-icon>visibility</mat-icon> Voir
+            </button>
+          </div>
+        </div>
+        <div class="empty-state" *ngIf="circulairesLues.length === 0">
+          <mat-icon>mark_email_read</mat-icon>
+          <p>Aucune circulaire lue</p>
+        </div>
       </div>
     </div>
-  </mat-sidenav-content>
-</mat-sidenav-container>
+
+    <!-- NON LUES (droite) -->
+    <div class="reunion-col">
+      <div class="reunion-col-header passees" style="background: #fff3e0;">
+        <mat-icon style="color: #e65100;">mark_email_unread</mat-icon>
+        <h3 style="color: #e65100;">Non lues</h3>
+        <span class="count-badge" style="background: #e65100;">{{ circulairesNonLues.length }}</span>
+      </div>
+      <div class="cr-grid-inner">
+        <div class="circulaire-card non-lue" *ngFor="let c of circulairesNonLues">
+          <div class="circ-top">
+            <div class="circ-icon non-lue"><mat-icon>campaign</mat-icon></div>
+            <div class="circ-info">
+              <h4>{{ c.titre }}</h4>
+              <span class="circ-auteur">{{ c.auteur }}</span>
+            </div>
+            <span class="priorite-badge" [ngClass]="c.priorite">{{ c.priorite }}</span>
+          </div>
+          <p class="circ-resume">{{ c.resume }}</p>
+          <div class="circ-meta">
+            <span><mat-icon>calendar_today</mat-icon>{{ c.dateCreation | date:'dd MMM yyyy' }}</span>
+            <span><mat-icon>people</mat-icon>{{ c.destinataire }}</span>
+          </div>
+          <div class="circ-actions">
+            <button class="circ-btn pdf" (click)="telechargerCirculairePDF(c)">
+              <mat-icon>picture_as_pdf</mat-icon> PDF
+            </button>
+            <button class="circ-btn lire" (click)="marquerCirculaireLue(c.id)">
+  <mat-icon>done</mat-icon> Marquer lu
+</button>
+          </div>
+        </div>
+        <div class="empty-state" *ngIf="circulairesNonLues.length === 0">
+          <mat-icon>campaign</mat-icon>
+          <p>Aucune circulaire non lue</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</mat-tab>
+
+          <!-- TAB 3 : ARCHIVES -->
+<mat-tab label="Archives">
+
+  <!-- STATS ARCHIVES -->
+  <div class="archive-stats">
+    <div class="archive-stat-item" [class.active]="filtreArchiveCategorie === 'Toutes'" (click)="filtreArchiveCategorie = 'Toutes'">
+      <mat-icon>folder</mat-icon>
+      <span class="archive-stat-value">{{ statsArchive.total }}</span>
+      <span class="archive-stat-label">Total</span>
+    </div>
+    <div class="archive-stat-item" [class.active]="filtreArchiveCategorie === 'Administratif'" (click)="filtreArchiveCategorie = 'Administratif'">
+      <mat-icon>business</mat-icon>
+      <span class="archive-stat-value">{{ statsArchive.administratif }}</span>
+      <span class="archive-stat-label">Administratif</span>
+    </div>
+    <div class="archive-stat-item" [class.active]="filtreArchiveCategorie === 'Pédagogique'" (click)="filtreArchiveCategorie = 'Pédagogique'">
+      <mat-icon>school</mat-icon>
+      <span class="archive-stat-value">{{ statsArchive.pedagogique }}</span>
+      <span class="archive-stat-label">Pédagogique</span>
+    </div>
+    <div class="archive-stat-item" [class.active]="filtreArchiveCategorie === 'Résultats'" (click)="filtreArchiveCategorie = 'Résultats'">
+      <mat-icon>bar_chart</mat-icon>
+      <span class="archive-stat-value">{{ statsArchive.resultats }}</span>
+      <span class="archive-stat-label">Résultats</span>
+    </div>
+    <div class="archive-stat-item" [class.active]="filtreArchiveCategorie === 'Réglementaire'" (click)="filtreArchiveCategorie = 'Réglementaire'">
+      <mat-icon>gavel</mat-icon>
+      <span class="archive-stat-value">{{ statsArchive.reglementaire }}</span>
+      <span class="archive-stat-label">Réglementaire</span>
+    </div>
+    <div class="archive-stat-item" [class.active]="filtreArchiveCategorie === 'Financier'" (click)="filtreArchiveCategorie = 'Financier'">
+      <mat-icon>account_balance_wallet</mat-icon>
+      <span class="archive-stat-value">{{ statsArchive.financier }}</span>
+      <span class="archive-stat-label">Financier</span>
+    </div>
+  </div>
+
+  <!-- FILTRES -->
+  <div class="filters-bar">
+    <div class="search-box">
+      <mat-icon>search</mat-icon>
+      <input type="text" placeholder="Rechercher un document..." [(ngModel)]="searchArchive">
+    </div>
+    <div class="filter-chips">
+      <button class="filter-chip" *ngFor="let a of accesArchive"
+        [class.active]="filtreArchiveAcces === a"
+        (click)="filtreArchiveAcces = a">
+        {{ a }}
+      </button>
+    </div>
+  </div>
+
+  <!-- GRILLE DOCUMENTS -->
+  <div class="archive-grid">
+    <div class="archive-card" *ngFor="let doc of documentsFiltres">
+  <div class="archive-card-top">
+    <div class="archive-icon-wrap" [style.background]="doc.color + '20'">
+      <mat-icon [style.color]="doc.color">{{ doc.icon }}</mat-icon>
+    </div>
+    <div class="archive-card-meta">
+      <span class="archive-acces-badge" [ngClass]="getAccesColor(doc.acces)">
+        <mat-icon>{{ doc.acces === 'Tous' ? 'public' : doc.acces === 'Administration' ? 'admin_panel_settings' : doc.acces === 'Enseignants' ? 'school' : 'person' }}</mat-icon>
+        {{ doc.acces }}
+      </span>
+    </div>
+  </div>
+  <h4 class="archive-card-title">{{ doc.nom }}</h4>
+  <p class="archive-card-desc">{{ doc.description }}</p>
+  <div class="archive-card-info">
+    <span><mat-icon>calendar_today</mat-icon>{{ doc.date }}</span>
+    <span><mat-icon>storage</mat-icon>{{ doc.taille }}</span>
+  </div>
+  <div class="archive-card-actions">
+    <button class="circ-btn pdf" (click)="telechargerDocument(doc)">
+      <mat-icon>picture_as_pdf</mat-icon> Télécharger
+    </button>
+  </div>
+</div>
+
+    <div class="empty-state" *ngIf="documentsFiltres.length === 0">
+      <mat-icon>folder_open</mat-icon>
+      <p>Aucun document trouvé</p>
+    </div>
+  </div>
+
+</mat-tab>
+
+          <!-- TAB 4 : NOTIFICATIONS -->
+<mat-tab>
+  <ng-template mat-tab-label>
+    Notifications
+    <span class="notif-count" *ngIf="notifsNonLues.length > 0">{{ notifsNonLues.length }}</span>
+  </ng-template>
+
+  <!-- HEADER -->
+  <div class="notif-toolbar">
+    <div class="notif-toolbar-left">
+      <h3>Centre de notifications</h3>
+      <span class="notif-summary">
+        <span class="non-lu-count">{{ notifsNonLues.length }} non lues</span>
+        · {{ notifications.length }} au total
+      </span>
+    </div>
+    <button mat-stroked-button (click)="marquerTousLus()">
+      <mat-icon>done_all</mat-icon> Tout marquer lu
+    </button>
+  </div>
+
+  <div class="reunions-grid">
+
+  <!-- LUES (gauche) -->
+  <div class="reunion-col">
+    <div class="reunion-col-header avenir" style="background: #e8f5e9;">
+      <mat-icon style="color: #2e7d32;">done_all</mat-icon>
+      <h3 style="color: #2e7d32;">Lues</h3>
+      <span class="count-badge" style="background: #2e7d32;">{{ notifsLues.length }}</span>
+    </div>
+    <div class="cr-grid-inner">
+      <div class="notif-card lue" *ngFor="let n of notifsLues">
+        <div class="notif-card-left">
+          <div class="notif-card-icon lue" [ngClass]="getNotifColor(n.type)">
+            <mat-icon>{{ getNotifIcon(n.type) }}</mat-icon>
+          </div>
+          <div class="notif-card-info">
+            <span class="notif-type-label" [ngClass]="getNotifColor(n.type)">{{ getNotifLabel(n.type) }}</span>
+            <h4>{{ n.titre }}</h4>
+            <div class="notif-card-meta">
+              <span><mat-icon>person</mat-icon>{{ n.auteur }}</span>
+              <span><mat-icon>people</mat-icon>{{ n.destinataire }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="notif-card-right">
+          <span class="priorite-badge" [ngClass]="n.priorite">{{ n.priorite }}</span>
+          <span class="notif-card-time">{{ n.time | date:'dd MMM HH:mm' }}</span>
+        </div>
+      </div>
+      <div class="empty-state" *ngIf="notifsLues.length === 0">
+        <mat-icon>notifications_none</mat-icon>
+        <p>Aucune notification lue</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- NON LUES (droite) -->
+  <div class="reunion-col">
+    <div class="reunion-col-header passees" style="background: #fff3e0;">
+      <mat-icon style="color: #e65100;">notifications_active</mat-icon>
+      <h3 style="color: #e65100;">Non lues</h3>
+      <span class="count-badge" style="background: #e65100;">{{ notifsNonLues.length }}</span>
+    </div>
+    <div class="cr-grid-inner">
+      <div class="notif-card" *ngFor="let n of notifsNonLues" (click)="marquerLu(n)">
+        <div class="notif-card-left">
+          <div class="notif-card-icon" [ngClass]="getNotifColor(n.type)">
+            <mat-icon>{{ getNotifIcon(n.type) }}</mat-icon>
+          </div>
+          <div class="notif-card-info">
+            <span class="notif-type-label" [ngClass]="getNotifColor(n.type)">{{ getNotifLabel(n.type) }}</span>
+            <h4>{{ n.titre }}</h4>
+            <div class="notif-card-meta">
+              <span><mat-icon>person</mat-icon>{{ n.auteur }}</span>
+              <span><mat-icon>people</mat-icon>{{ n.destinataire }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="notif-card-right">
+          <span class="priorite-badge" [ngClass]="n.priorite">{{ n.priorite }}</span>
+          <span class="notif-card-time">{{ n.time | date:'dd MMM HH:mm' }}</span>
+          <span class="notif-new-dot"></span>
+        </div>
+      </div>
+      <div class="empty-state" *ngIf="notifsNonLues.length === 0">
+        <mat-icon>notifications_none</mat-icon>
+        <p>Aucune notification non lue</p>
+      </div>
+    </div>
+  </div>
+
+</div>
