@@ -1,0 +1,25 @@
+.spacer { flex: 1; }
+
+.content {
+  padding: 2rem;
+  background: #f5f5f5;
+  min-height: calc(100vh - 64px);
+}
+
+.filter-card {
+  margin-bottom: 1rem;
+  padding: 1rem;
+}
+
+.search-field {
+  width: 100%;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.chip-actif { background: #e8f5e9 !important; color: #2e7d32 !important; }
+.chip-diplome { background: #e3f2fd !important; color: #1565c0 !important; }
+.chip-abandonne { background: #ffebee !important; color: #c62828 !important; }
+.chip-suspendu { background: #fff3e0 !important; color: #e65100 !important; }

@@ -1,0 +1,108 @@
+<mat-toolbar color="primary">
+  <button mat-icon-button (click)="retour()">
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+  <span>Comptes Rendus & Circulaires</span>
+  <span class="spacer"></span>
+  <button mat-raised-button (click)="showForm = !showForm">
+    <mat-icon>add</mat-icon> Nouveau
+  </button>
+</mat-toolbar>
+
+<div class="content">
+
+  <mat-card class="form-card" *ngIf="showForm">
+    <mat-card-header>
+      <mat-card-title>Nouveau Compte Rendu</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="crForm" (ngSubmit)="onSubmit()">
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Titre *</mat-label>
+            <input matInput formControlName="titre">
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Type d'instance *</mat-label>
+            <mat-select formControlName="typeInstance">
+              <mat-option *ngFor="let t of typesInstance" [value]="t">{{ t }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Auteur *</mat-label>
+          <input matInput formControlName="auteur">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Contenu *</mat-label>
+          <textarea matInput formControlName="contenu" rows="5"></textarea>
+        </mat-form-field>
+
+        <div class="form-actions">
+          <button mat-stroked-button type="button" (click)="showForm = false">Annuler</button>
+          <button mat-raised-button color="primary" type="submit">
+            <mat-icon>save</mat-icon> Enregistrer
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card>
+    <mat-card-content>
+      <table mat-table [dataSource]="comptesRendus" class="full-width">
+
+        <ng-container matColumnDef="titre">
+          <th mat-header-cell *matHeaderCellDef>Titre</th>
+          <td mat-cell *matCellDef="let cr">{{ cr.titre }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="typeInstance">
+          <th mat-header-cell *matHeaderCellDef>Type</th>
+          <td mat-cell *matCellDef="let cr">
+            <mat-chip>{{ cr.typeInstance }}</mat-chip>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="auteur">
+          <th mat-header-cell *matHeaderCellDef>Auteur</th>
+          <td mat-cell *matCellDef="let cr">{{ cr.auteur }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="dateCreation">
+          <th mat-header-cell *matHeaderCellDef>Date</th>
+          <td mat-cell *matCellDef="let cr">{{ cr.dateCreation | date:'dd/MM/yyyy' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="statut">
+          <th mat-header-cell *matHeaderCellDef>Statut</th>
+          <td mat-cell *matCellDef="let cr">
+            <mat-chip [class]="cr.estPublie ? 'chip-publie' : 'chip-brouillon'">
+              {{ cr.estPublie ? 'Publié' : 'Brouillon' }}
+            </mat-chip>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let cr">
+            <button mat-icon-button color="primary" (click)="publier(cr.id)" [disabled]="cr.estPublie">
+              <mat-icon>publish</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell" colspan="6" style="text-align:center; padding: 2rem;">
+            Aucun compte rendu
+          </td>
+        </tr>
+      </table>
+    </mat-card-content>
+  </mat-card>
+</div>

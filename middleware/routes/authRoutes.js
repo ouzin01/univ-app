@@ -7,7 +7,12 @@ const router = express.Router();
 router.use('/', createProxyMiddleware({
     target: config.auth,
     changeOrigin: true,
-    pathRewrite: { '^/api/auth': '/api/auth' }
+    on: {
+        error: (err, req, res) => {
+            console.error('Proxy error:', err);
+            res.status(500).json({ error: 'Proxy error' });
+        }
+    }
 }));
 
 module.exports = router;

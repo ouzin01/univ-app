@@ -1,0 +1,100 @@
+<mat-toolbar color="primary">
+  <button mat-icon-button (click)="retour()">
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+  <span>Nouvelle Formation</span>
+</mat-toolbar>
+
+<div class="content">
+  <mat-card class="form-card">
+    <mat-card-header>
+      <mat-card-title>Informations de la formation</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="formationForm" (ngSubmit)="onSubmit()">
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Intitulé *</mat-label>
+          <input matInput formControlName="intitule" placeholder="Nom de la formation">
+          <mat-error *ngIf="formationForm.get('intitule')?.hasError('required')">Intitulé obligatoire</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Description</mat-label>
+          <textarea matInput formControlName="description" rows="3"></textarea>
+        </mat-form-field>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Type de formation *</mat-label>
+            <mat-select formControlName="typeFormation">
+              <mat-option *ngFor="let t of typesFormation" [value]="t">{{ t }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Niveau d'études *</mat-label>
+            <input matInput formControlName="niveauEtudes" placeholder="Licence, Master...">
+            <mat-error *ngIf="formationForm.get('niveauEtudes')?.hasError('required')">Niveau obligatoire</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Date de début</mat-label>
+            <input matInput formControlName="dateDebut" type="date">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Date de fin</mat-label>
+            <input matInput formControlName="dateFin" type="date">
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Type de financement</mat-label>
+            <mat-select formControlName="typeFinancement">
+              <mat-option *ngFor="let t of typesFinancement" [value]="t">{{ t }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Montant financement</mat-label>
+            <input matInput formControlName="montantFinancement" type="number">
+            <span matSuffix>FCFA</span>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Nombre apprenants Hommes</mat-label>
+            <input matInput formControlName="nbApprenantsHommes" type="number">
+            <mat-icon matSuffix>man</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Nombre apprenantes Femmes</mat-label>
+            <input matInput formControlName="nbApprenantsFemmes" type="number">
+            <mat-icon matSuffix>woman</mat-icon>
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Responsable de formation *</mat-label>
+          <input matInput formControlName="responsableFormation">
+          <mat-error *ngIf="formationForm.get('responsableFormation')?.hasError('required')">Responsable obligatoire</mat-error>
+        </mat-form-field>
+
+        <div class="form-actions">
+          <button mat-stroked-button type="button" (click)="retour()">Annuler</button>
+          <button mat-raised-button color="primary" type="submit" [disabled]="loading">
+            <mat-icon>save</mat-icon> Enregistrer
+          </button>
+        </div>
+
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

@@ -1,0 +1,92 @@
+<mat-toolbar color="primary" class="toolbar">
+  <button mat-icon-button (click)="sidenav.toggle()">
+    <mat-icon>menu</mat-icon>
+  </button>
+  <span class="app-title">
+    <mat-icon>school</mat-icon>
+    Université Numérique CHK
+  </span>
+  <span class="spacer"></span>
+  <span class="user-info">{{ currentUser?.fullName }}</span>
+  <button mat-icon-button (click)="logout()">
+    <mat-icon>logout</mat-icon>
+  </button>
+</mat-toolbar>
+
+<mat-sidenav-container class="sidenav-container">
+  <mat-sidenav #sidenav mode="side" opened class="sidenav">
+    <div class="sidenav-header">
+      <mat-icon class="sidenav-avatar">account_circle</mat-icon>
+      <div>
+        <p class="sidenav-name">{{ currentUser?.fullName }}</p>
+        <p class="sidenav-role">{{ currentUser?.role }}</p>
+      </div>
+    </div>
+    <mat-nav-list>
+      <mat-list-item *ngFor="let item of menuItems" (click)="navigate(item.route)" class="nav-item">
+        <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+        <span matListItemTitle>{{ item.label }}</span>
+      </mat-list-item>
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="main-content">
+    <div class="dashboard-grid">
+      <h2 class="section-title">Tableau de bord Administrateur</h2>
+
+      <div class="stats-grid">
+        <mat-card class="stat-card students" (click)="navigate('/etudiants')">
+          <mat-card-content>
+            <mat-icon>people</mat-icon>
+            <div class="stat-info">
+              <h3>{{ stats.etudiants }}</h3>
+              <p>Étudiants</p>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stat-card formations" (click)="navigate('/formations')">
+          <mat-card-content>
+            <mat-icon>school</mat-icon>
+            <div class="stat-info">
+              <h3>{{ stats.formations }}</h3>
+              <p>Formations</p>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stat-card courriers" (click)="navigate('/administration')">
+          <mat-card-content>
+            <mat-icon>mail</mat-icon>
+            <div class="stat-info">
+              <h3>{{ stats.courriers }}</h3>
+              <p>Courriers</p>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stat-card communication" (click)="navigate('/communication')">
+          <mat-card-content>
+            <mat-icon>campaign</mat-icon>
+            <div class="stat-info">
+              <h3>{{ stats.compteRendus }}</h3>
+              <p>Comptes Rendus</p>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <div class="actions-grid">
+        <mat-card class="action-card" *ngFor="let item of menuItems.slice(1)">
+          <mat-card-content>
+            <mat-icon>{{ item.icon }}</mat-icon>
+            <h3>{{ item.label }}</h3>
+            <button mat-raised-button color="primary" (click)="navigate(item.route)">
+              Accéder
+            </button>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

@@ -2,42 +2,50 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const { createProxyMiddleware } = require('http-proxy-middleware');
 require('dotenv').config();
-
-const authRoutes = require('./routes/authRoutes');
-const communicationRoutes = require('./routes/communicationRoutes');
-const administrationRoutes = require('./routes/administrationRoutes');
-const formationRoutes = require('./routes/formationRoutes');
-const etudiantRoutes = require('./routes/etudiantRoutes');
 
 const app = express();
 
-// Middlewares
 app.use(cors());
-app.use(helmet());
 app.use(morgan('dev'));
 app.use(express.json());
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/communication', communicationRoutes);
-app.use('/api/administration', administrationRoutes);
-app.use('/api/formations', formationRoutes);
-app.use('/api/etudiants', etudiantRoutes);
-
 // Health check
 app.get('/health', (req, res) => {
-    res.json({
-        status: 'OK',
-        services: {
-            auth: process.env.AUTH_SERVICE,
-            communication: process.env.COMMUNICATION_SERVICE,
-            administration: process.env.ADMINISTRATION_SERVICE,
-            formation: process.env.FORMATION_SERVICE,
-            etudiant: process.env.ETUDIANT_SERVICE
-        }
-    });
+    res.json({ status: 'OK' });
 });
+
+// Proxy direct sans router
+app.use('/api/auth', createProxyMiddleware({
+    target: 'http://localhost:8081',
+    changeOrigin: true,
+    logger: console
+}));
+
+app.use('/api/communication', createProxyMiddleware({
+    target: 'http://localhost:8082',
+    changeOrigin: true,
+    logger: console
+}));
+
+app.use('/api/administration', createProxyMiddleware({
+    target: 'http://localhost:8083',
+    changeOrigin: true,
+    logger: console
+}));
+
+app.use('/api/formations', createProxyMiddleware({
+    target: 'http://localhost:8084',
+    changeOrigin: true,
+    logger: console
+}));
+
+app.use('/api/etudiants', createProxyMiddleware({
+    target: 'http://localhost:8085',
+    changeOrigin: true,
+    logger: console
+}));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
