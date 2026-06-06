@@ -1,92 +1,175 @@
-<mat-toolbar color="primary" class="toolbar">
-  <button mat-icon-button (click)="sidenav.toggle()">
-    <mat-icon>menu</mat-icon>
-  </button>
-  <span class="app-title">
-    <mat-icon>school</mat-icon>
-    Université Numérique CHK
-  </span>
-  <span class="spacer"></span>
-  <span class="user-info">{{ currentUser?.fullName }}</span>
-  <button mat-icon-button (click)="logout()">
-    <mat-icon>logout</mat-icon>
-  </button>
-</mat-toolbar>
-
 <mat-sidenav-container class="sidenav-container">
-  <mat-sidenav #sidenav mode="side" opened class="sidenav">
+  <mat-sidenav mode="side" opened class="sidenav">
     <div class="sidenav-header">
-      <mat-icon class="sidenav-avatar">account_circle</mat-icon>
-      <div>
-        <p class="sidenav-name">{{ currentUser?.fullName }}</p>
-        <p class="sidenav-role">{{ currentUser?.role }}</p>
-      </div>
+      <img src="logo.png" alt="UNCHK Logo" class="logo">
     </div>
+
     <mat-nav-list>
-      <mat-list-item *ngFor="let item of menuItems" (click)="navigate(item.route)" class="nav-item">
-        <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
-        <span matListItemTitle>{{ item.label }}</span>
+      <mat-list-item *ngFor="let item of menuItems" [routerLink]="item.route" routerLinkActive="active-link">
+        <mat-icon matListItemIcon>{{item.icon}}</mat-icon>
+        <span matListItemTitle>{{item.label}}</span>
       </mat-list-item>
     </mat-nav-list>
   </mat-sidenav>
 
-  <mat-sidenav-content class="main-content">
-    <div class="dashboard-grid">
-      <h2 class="section-title">Tableau de bord Administrateur</h2>
+  <mat-sidenav-content>
+    <mat-toolbar class="toolbar">
+      <span class="toolbar-title">Tableau de bord</span>
+      <span class="spacer"></span>
+      <app-navbar></app-navbar>
+    </mat-toolbar>
 
+    <div class="content">
+      <h2 class="welcome">Bienvenue sur la plateforme UNCHK</h2>
+
+      <!-- STATS -->
       <div class="stats-grid">
-        <mat-card class="stat-card students" (click)="navigate('/etudiants')">
-          <mat-card-content>
-            <mat-icon>people</mat-icon>
+        <div *ngFor="let stat of stats" class="stat-card">
+          <div class="stat-content">
             <div class="stat-info">
-              <h3>{{ stats.etudiants }}</h3>
-              <p>Étudiants</p>
+              <p class="stat-label">{{stat.label}}</p>
+              <h3 class="stat-value">{{stat.value}}</h3>
             </div>
-          </mat-card-content>
-        </mat-card>
-
-        <mat-card class="stat-card formations" (click)="navigate('/formations')">
-          <mat-card-content>
-            <mat-icon>school</mat-icon>
-            <div class="stat-info">
-              <h3>{{ stats.formations }}</h3>
-              <p>Formations</p>
-            </div>
-          </mat-card-content>
-        </mat-card>
-
-        <mat-card class="stat-card courriers" (click)="navigate('/administration')">
-          <mat-card-content>
-            <mat-icon>mail</mat-icon>
-            <div class="stat-info">
-              <h3>{{ stats.courriers }}</h3>
-              <p>Courriers</p>
-            </div>
-          </mat-card-content>
-        </mat-card>
-
-        <mat-card class="stat-card communication" (click)="navigate('/communication')">
-          <mat-card-content>
-            <mat-icon>campaign</mat-icon>
-            <div class="stat-info">
-              <h3>{{ stats.compteRendus }}</h3>
-              <p>Comptes Rendus</p>
-            </div>
-          </mat-card-content>
-        </mat-card>
+            <mat-icon class="stat-icon">{{stat.icon}}</mat-icon>
+          </div>
+        </div>
       </div>
 
-      <div class="actions-grid">
-        <mat-card class="action-card" *ngFor="let item of menuItems.slice(1)">
-          <mat-card-content>
-            <mat-icon>{{ item.icon }}</mat-icon>
-            <h3>{{ item.label }}</h3>
-            <button mat-raised-button color="primary" (click)="navigate(item.route)">
-              Accéder
-            </button>
-          </mat-card-content>
-        </mat-card>
+      <!-- ACCES RAPIDES -->
+      <div class="section-title">
+        <mat-icon>flash_on</mat-icon>
+        <h3>Accès rapides</h3>
       </div>
+      <div class="quick-access-grid">
+        <button *ngFor="let qa of quickAccess" mat-raised-button class="quick-btn" [routerLink]="qa.route">
+          <mat-icon>{{qa.icon}}</mat-icon>
+          <span>{{qa.label}}</span>
+        </button>
+      </div>
+
+      <!-- GRAPHIQUES + ACTIVITES -->
+      <div class="bottom-grid">
+
+        <!-- GRAPHIQUES -->
+        <div class="charts-col">
+          <div class="chart-card">
+            <h3>Étudiants par formation</h3>
+            <canvas #barChart></canvas>
+          </div>
+          <div class="chart-card">
+            <h3>Insertion professionnelle</h3>
+            <canvas #pieChart></canvas>
+          </div>
+        </div>
+
+        <!-- COLONNE DROITE -->
+        <div class="right-col">
+          <div class="activity-card">
+            <div class="card-header">
+              <mat-icon>history</mat-icon>
+              <h3>Activités récentes</h3>
+            </div>
+            <div class="activity-list">
+              <div *ngFor="let a of activites" class="activity-item">
+                <div class="activity-icon" [ngClass]="a.type">
+                  <mat-icon>{{a.icon}}</mat-icon>
+                </div>
+                <div class="activity-info">
+                  <p>{{a.message}}</p>
+                  <span>{{a.time}}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="alertes-card">
+            <div class="card-header">
+              <mat-icon>warning</mat-icon>
+              <h3>Alertes</h3>
+            </div>
+            <div class="alerte-list">
+              <div *ngFor="let a of alertes" class="alerte-item" [ngClass]="a.niveau">
+                <mat-icon>{{a.icon}}</mat-icon>
+                <div class="alerte-info">
+                  <p>{{a.message}}</p>
+                  <span>{{a.date}}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CALENDRIER -->
+      <div class="section-title" style="margin-top: 12px;">
+        <mat-icon>calendar_month</mat-icon>
+        <h3>Agenda — {{moisAffiche}}</h3>
+        <div class="cal-nav">
+          <button mat-icon-button (click)="moisPrecedent()" class="cal-nav-btn">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          <button mat-icon-button (click)="moisSuivant()" class="cal-nav-btn">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <div class="calendrier-grid">
+        <div class="calendrier-card">
+          <div class="cal-jours-header">
+            <span *ngFor="let j of joursHeader">{{j}}</span>
+          </div>
+          <div class="cal-jours">
+            <div *ngFor="let jour of jours" class="cal-jour"
+              [ngClass]="{
+                'vide': !jour.actif,
+                'aujourd-hui': jour.estAujourdhui,
+                'selectionne': jour.selectionne,
+                'a-evenement': jour.evenements.length > 0
+              }"
+              (click)="selectionnerJour(jour)">
+              <span class="num">{{jour.actif ? jour.num : ''}}</span>
+              <div class="evt-dots">
+                <span *ngFor="let e of jour.evenements.slice(0,3)" class="dot" [ngClass]="e.type"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="evenements-card">
+          <div class="card-header">
+            <mat-icon>event</mat-icon>
+            <h3>{{jourSelectionne ? 'Événements du ' + jourSelectionne.num + ' ' + moisAffiche : 'Sélectionnez un jour'}}</h3>
+          </div>
+
+          <div *ngIf="jourSelectionne && jourSelectionne.evenements.length > 0" class="evt-list">
+            <div *ngFor="let e of jourSelectionne.evenements" class="evt-item" [ngClass]="e.type">
+              <div class="evt-heure">{{e.heure}}</div>
+              <div class="evt-info">
+                <p>{{e.titre}}</p>
+                <span>{{e.lieu}}</span>
+              </div>
+              <span class="evt-badge" [ngClass]="e.type">{{e.type}}</span>
+            </div>
+          </div>
+
+          <div *ngIf="jourSelectionne && jourSelectionne.evenements.length === 0" class="evt-empty">
+            <mat-icon>event_available</mat-icon>
+            <p>Aucun événement ce jour</p>
+          </div>
+
+          <div *ngIf="!jourSelectionne" class="evt-empty">
+            <mat-icon>calendar_today</mat-icon>
+            <p>Cliquez sur un jour pour voir les événements</p>
+          </div>
+
+          <button mat-raised-button class="add-evt-btn" *ngIf="jourSelectionne" (click)="ajouterEvenement()">
+            <mat-icon>add</mat-icon>
+            Ajouter un événement
+          </button>
+        </div>
+      </div>
+
     </div>
   </mat-sidenav-content>
 </mat-sidenav-container>

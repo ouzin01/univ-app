@@ -1,46 +1,63 @@
-<div class="login-container">
-  <mat-card class="login-card">
-    <mat-card-header>
-      <div class="logo-section">
-        <mat-icon class="logo-icon">school</mat-icon>
-        <h1>Université Numérique</h1>
-        <p>Cheikh Hamidou KANE</p>
-      </div>
-    </mat-card-header>
+<div class="login-container" *ngIf="!isLoading">
+  <div class="bg-text">UNCHK</div>
 
-    <mat-card-content>
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Nom d'utilisateur</mat-label>
-          <input matInput formControlName="username" placeholder="Entrez votre identifiant">
-          <mat-icon matSuffix>person</mat-icon>
-          <mat-error *ngIf="loginForm.get('username')?.hasError('required')">
-            Nom d'utilisateur obligatoire
-          </mat-error>
-        </mat-form-field>
+  <div class="login-overlay">
+    <div class="login-top">
+      <img src="logo.png" alt="UNCHK Logo" class="logo">
+    </div>
 
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Mot de passe</mat-label>
-          <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password">
-          <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword">
-            <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
-          </button>
-          <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
-            Mot de passe obligatoire
-          </mat-error>
-        </mat-form-field>
+    <div class="login-card">
+      <h2>Connexion</h2>
+      <p class="subtitle">Connectez-vous à votre espace</p>
 
-        <div class="error-message" *ngIf="error">
+      <div class="login-form">
+
+        <div class="error-msg" *ngIf="error">
           <mat-icon>error</mat-icon>
           <span>{{ error }}</span>
         </div>
 
-        <button mat-raised-button color="primary" type="submit"
-          class="full-width login-btn" [disabled]="loading">
-          <mat-spinner diameter="20" *ngIf="loading"></mat-spinner>
-          <span *ngIf="!loading">Se connecter</span>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Nom d'utilisateur</mat-label>
+          <input matInput [formControl]="usernameControl" placeholder="Votre identifiant">
+          <mat-icon matSuffix>person</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Mot de passe</mat-label>
+          <input matInput [type]="hidePassword ? 'password' : 'text'" [formControl]="passwordControl">
+          <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword">
+            <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+        </mat-form-field>
+
+        <div class="remember-forgot">
+          <label class="remember-me">
+            <input type="checkbox" [(ngModel)]="rememberMe">
+            <span>Se souvenir de moi</span>
+          </label>
+          <a class="forgot-link" (click)="onForgotPassword()">Mot de passe oublié ?</a>
+        </div>
+
+        <button mat-raised-button class="login-btn" (click)="onSubmit()">
+          <mat-icon>login</mat-icon>
+          Se connecter
         </button>
-      </form>
-    </mat-card-content>
-  </mat-card>
+
+      </div>
+
+      <p class="footer">© 2026 UNCHK — Tous droits réservés</p>
+    </div>
+  </div>
+</div>
+
+<!-- LOADER APRES LOGIN -->
+<div class="page-loader" *ngIf="isLoading">
+  <div class="loader-content">
+    <img src="logo.png" alt="UNCHK Logo" class="loader-logo">
+    <div class="loader-bar">
+      <div class="loader-progress"></div>
+    </div>
+    <p class="loader-text">Connexion en cours...</p>
+  </div>
 </div>

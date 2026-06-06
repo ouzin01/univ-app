@@ -1,1 +1,53 @@
-<p>navbar works!</p>
+<div class="toolbar-actions">
+  <button mat-icon-button (click)="toggleNotifications()" class="toolbar-btn">
+    <mat-icon [matBadge]="notifCount > 0 ? notifCount : null" matBadgeColor="warn" matBadgeSize="small">notifications</mat-icon>
+  </button>
+  <button mat-icon-button (click)="toggleProfil()" class="toolbar-btn">
+    <mat-icon>account_circle</mat-icon>
+  </button>
+
+  <!-- DROPDOWN NOTIFICATIONS -->
+  <div class="notif-dropdown" *ngIf="showNotifications">
+    <div class="notif-header">
+      <h4>Notifications</h4>
+      <span class="notif-badge">{{ notifications.length }} nouvelles</span>
+    </div>
+    <div class="notif-list">
+      <div class="notif-item" *ngFor="let n of notifications">
+        <div class="notif-icon">
+          <mat-icon>{{ n.icon }}</mat-icon>
+        </div>
+        <div class="notif-content">
+          <p class="notif-message">{{ n.message }}</p>
+          <p class="notif-time">{{ n.time }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="notif-footer">
+      <button mat-button>Voir toutes les notifications</button>
+    </div>
+  </div>
+
+  <!-- DROPDOWN PROFIL -->
+  <div class="profil-dropdown" *ngIf="showProfil">
+    <div class="profil-header">
+      <mat-icon class="profil-avatar">account_circle</mat-icon>
+      <div>
+        <p class="profil-nom">{{ userName }}</p>
+        <span class="profil-email">{{ userEmail }}</span>
+        <span class="profil-role">{{ userRole }}</span>
+      </div>
+    </div>
+    <div class="profil-body">
+      <button mat-button class="profil-btn">
+        <mat-icon>person</mat-icon>
+        Mon profil
+      </button>
+      <mat-divider></mat-divider>
+      <button mat-button class="profil-btn logout" (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        Déconnexion
+      </button>
+    </div>
+  </div>
+</div>
