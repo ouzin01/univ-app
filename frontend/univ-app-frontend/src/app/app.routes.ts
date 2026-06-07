@@ -10,6 +10,7 @@ import { FormationListComponent } from './components/formations/formation-list/f
 import { FormationFormComponent } from './components/formations/formation-form/formation-form';
 import { ComptesRendusComponent } from './components/communication/comptes-rendus/comptes-rendus';
 import { CourriersComponent } from './components/administration/courriers/courriers';
+import { InsertionComponent } from './components/insertion/insertion/insertion';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -23,5 +24,6 @@ export const routes: Routes = [
   { path: 'formations/nouvelle', component: FormationFormComponent, canActivate: [authGuard] },
   { path: 'communication', component: ComptesRendusComponent, canActivate: [authGuard] },
   { path: 'administration', component: CourriersComponent, canActivate: [authGuard] },
-  { path: '**', redirectTo: '/login' }
+  { path: 'insertion', component: InsertionComponent, canActivate: [authGuard] },
+  { path: '**', redirectTo: '/login' },
 ];

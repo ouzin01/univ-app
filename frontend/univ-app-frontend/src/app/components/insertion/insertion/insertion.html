@@ -1,0 +1,360 @@
+<mat-sidenav-container class="sidenav-container">
+  <mat-sidenav mode="side" opened class="sidenav">
+    <div class="sidenav-header">
+      <img src="logo.png" alt="UNCHK Logo" class="logo">
+    </div>
+    <mat-nav-list>
+      <mat-list-item *ngFor="let item of menuItems"
+        [routerLink]="item.route"
+        routerLinkActive="active-link"
+        [routerLinkActiveOptions]="{exact: item.route === '/admin'}">
+        <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+        <span matListItemTitle>{{ item.label }}</span>
+      </mat-list-item>
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <mat-toolbar class="toolbar">
+      <span class="spacer"></span>
+      <span class="toolbar-title">Insertion</span>
+      <span class="spacer"></span>
+      <app-navbar></app-navbar>
+    </mat-toolbar>
+
+    <div class="content">
+
+      <!-- STATS -->
+      <div class="stats-grid">
+        <div class="stat-card" *ngFor="let stat of stats">
+          <div class="stat-content">
+            <div>
+              <p class="stat-label">{{ stat.label }}</p>
+              <h3 class="stat-value">{{ stat.value }}{{ stat.suffix || '' }}</h3>
+            </div>
+            <mat-icon class="stat-icon">{{ stat.icon }}</mat-icon>
+          </div>
+        </div>
+      </div>
+
+      <div class="insertion-container">
+        <mat-tab-group [(selectedIndex)]="activeTab" class="main-tabs">
+
+          <!-- TAB 1 : SUIVI ETUDIANTS -->
+          <mat-tab label="Suivi étudiants">
+
+            <div class="form-section" *ngIf="showForm && activeTab === 0">
+              <h3 class="form-title"><mat-icon>person_add</mat-icon> Nouveau contact</h3>
+              <form [formGroup]="contactForm" (ngSubmit)="submitContact()">
+                <div class="form-row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Nom complet *</mat-label>
+                    <input matInput formControlName="nom">
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Formation *</mat-label>
+                    <input matInput formControlName="formation">
+                  </mat-form-field>
+                </div>
+                <div class="form-row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Promotion *</mat-label>
+                    <input matInput formControlName="promotion">
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Statut *</mat-label>
+                    <mat-select formControlName="statut">
+                      <mat-option value="EN_STAGE">En stage</mat-option>
+                      <mat-option value="EN_RECHERCHE">En recherche</mat-option>
+                      <mat-option value="EMPLOYE">Employé</mat-option>
+                      <mat-option value="AUTO_EMPLOI">Auto-emploi</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+                <div class="form-row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Téléphone</mat-label>
+                    <input matInput formControlName="telephone">
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Email</mat-label>
+                    <input matInput formControlName="email" type="email">
+                  </mat-form-field>
+                </div>
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Entreprise</mat-label>
+                  <input matInput formControlName="entreprise">
+                </mat-form-field>
+                <div class="form-actions">
+                  <button mat-stroked-button type="button" (click)="showForm = false">Annuler</button>
+                  <button mat-raised-button class="save-btn" type="submit">
+                    <mat-icon>save</mat-icon> Enregistrer
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- REGISTRE CONTACTS -->
+            <div class="tab-toolbar">
+              <div class="search-box">
+                <mat-icon>search</mat-icon>
+                <input type="text" placeholder="Rechercher un étudiant..." [(ngModel)]="searchContact">
+              </div>
+              <div class="filter-chips">
+                <button class="filter-chip" [class.active]="filtreStatutContact === 'TOUS'" (click)="filtreStatutContact = 'TOUS'">Tous</button>
+                <button class="filter-chip" [class.active]="filtreStatutContact === 'EN_STAGE'" (click)="filtreStatutContact = 'EN_STAGE'">En stage</button>
+                <button class="filter-chip" [class.active]="filtreStatutContact === 'EMPLOYE'" (click)="filtreStatutContact = 'EMPLOYE'">Employés</button>
+                <button class="filter-chip" [class.active]="filtreStatutContact === 'AUTO_EMPLOI'" (click)="filtreStatutContact = 'AUTO_EMPLOI'">Auto-emploi</button>
+                <button class="filter-chip" [class.active]="filtreStatutContact === 'EN_RECHERCHE'" (click)="filtreStatutContact = 'EN_RECHERCHE'">En recherche</button>
+              </div>
+              <button class="add-btn-small" (click)="showForm = !showForm">
+                <mat-icon>add</mat-icon> Nouveau
+              </button>
+            </div>
+
+            <div class="contacts-grid">
+              <div class="contact-card" *ngFor="let c of contactsFiltres">
+                <div class="contact-top">
+                  <div class="avatar" [ngClass]="'avatar-' + c.statut">{{ c.initiales }}</div>
+                  <div class="contact-info">
+                    <h4>{{ c.nom }}</h4>
+                    <span>{{ c.formation }} — Promo {{ c.promotion }}</span>
+                    <span *ngIf="c.entreprise" class="entreprise">
+                      <mat-icon>business</mat-icon>{{ c.entreprise }}
+                    </span>
+                  </div>
+                  <span class="statut-badge" [ngClass]="getStatutColor(c.statut)">{{ getStatutLabel(c.statut) }}</span>
+                </div>
+                <div class="contact-footer">
+                  <span><mat-icon>phone</mat-icon>{{ c.telephone }}</span>
+                  <span><mat-icon>email</mat-icon>{{ c.email }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- BILAN STAGES -->
+            <div class="section-header">
+  <mat-icon>work_history</mat-icon>
+  <h3>Bilan des stages</h3>
+</div>
+
+            <div class="stages-list">
+              <div class="stage-card" *ngFor="let s of stages">
+                <div class="stage-left">
+                  <div class="stage-icon">
+                    <mat-icon>work</mat-icon>
+                  </div>
+                  <div class="stage-info">
+                    <h4>{{ s.etudiant }}</h4>
+                    <span class="stage-sujet">{{ s.sujet }}</span>
+                    <span class="stage-meta">
+                      <mat-icon>business</mat-icon>{{ s.entreprise }} ·
+                      <mat-icon>schedule</mat-icon>{{ s.duree }}
+                      <span *ngIf="s.debut"> · {{ s.debut }} → {{ s.fin }}</span>
+                    </span>
+                  </div>
+                </div>
+                <div class="stage-right">
+                  <span class="statut-badge" [ngClass]="getStatutColor(s.statut)">{{ getStatutLabel(s.statut) }}</span>
+                  <span class="note-badge" *ngIf="s.note">{{ s.note }}/20</span>
+                </div>
+              </div>
+            </div>
+
+          </mat-tab>
+
+          <!-- TAB 2 : INSERTION PRO -->
+          <mat-tab label="Insertion professionnelle">
+
+            <!-- KPI -->
+            <div class="insertion-kpi">
+              <div class="kpi-card teal">
+                <mat-icon>store</mat-icon>
+                <span class="kpi-value">{{ statsInsertion.autoEmploi }}</span>
+                <span class="kpi-label">Auto-emploi</span>
+                <span class="kpi-pct">{{ (statsInsertion.autoEmploi / (statsInsertion.autoEmploi + statsInsertion.emploiSalarie + statsInsertion.enRecherche + statsInsertion.enStage) * 100).toFixed(0) }}%</span>
+              </div>
+              <div class="kpi-card blue">
+                <mat-icon>badge</mat-icon>
+                <span class="kpi-value">{{ statsInsertion.emploiSalarie }}</span>
+                <span class="kpi-label">Emploi salarié</span>
+                <span class="kpi-pct">{{ (statsInsertion.emploiSalarie / (statsInsertion.autoEmploi + statsInsertion.emploiSalarie + statsInsertion.enRecherche + statsInsertion.enStage) * 100).toFixed(0) }}%</span>
+              </div>
+              <div class="kpi-card orange">
+                <mat-icon>search</mat-icon>
+                <span class="kpi-value">{{ statsInsertion.enRecherche }}</span>
+                <span class="kpi-label">En recherche</span>
+                <span class="kpi-pct">{{ (statsInsertion.enRecherche / (statsInsertion.autoEmploi + statsInsertion.emploiSalarie + statsInsertion.enRecherche + statsInsertion.enStage) * 100).toFixed(0) }}%</span>
+              </div>
+              <div class="kpi-card purple">
+                <mat-icon>work_history</mat-icon>
+                <span class="kpi-value">{{ statsInsertion.enStage }}</span>
+                <span class="kpi-label">En stage</span>
+                <span class="kpi-pct">{{ (statsInsertion.enStage / (statsInsertion.autoEmploi + statsInsertion.emploiSalarie + statsInsertion.enRecherche + statsInsertion.enStage) * 100).toFixed(0) }}%</span>
+              </div>
+            </div>
+
+            <!-- GRAPHIQUES -->
+            <div class="charts-grid">
+              <div class="chart-card">
+                <h3 class="chart-title"><mat-icon>donut_large</mat-icon> Répartition insertion</h3>
+                <div class="chart-wrap">
+                  <canvas #insertionChart></canvas>
+                </div>
+              </div>
+              <div class="chart-card">
+                <h3 class="chart-title"><mat-icon>bar_chart</mat-icon> Évolution par promotion</h3>
+                <div class="chart-wrap">
+                  <canvas #evolutionChart></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- TABLEAU SORTANTS -->
+            <div class="section-header">
+              <mat-icon>groups</mat-icon>
+              <h3>Statistiques par promotion</h3>
+            </div>
+
+            <div class="sortants-table">
+              <div class="table-header">
+                <span>Promotion</span>
+                <span>Total</span>
+                <span>Auto-emploi</span>
+                <span>Emploi salarié</span>
+                <span>En recherche</span>
+                <span>Taux insertion</span>
+              </div>
+              <div class="table-row" *ngFor="let s of sortants">
+                <span class="promo-name">{{ s.promotion }}</span>
+                <span class="total-badge">{{ s.total }}</span>
+                <span>
+                  <span class="mini-badge teal">{{ s.autoEmploi }}</span>
+                </span>
+                <span>
+                  <span class="mini-badge blue">{{ s.emploiSalarie }}</span>
+                </span>
+                <span>
+                  <span class="mini-badge orange">{{ s.enRecherche }}</span>
+                </span>
+                <span>
+                  <div class="taux-bar">
+                    <div class="taux-fill" [style.width]="((s.autoEmploi + s.emploiSalarie) / s.total * 100) + '%'"></div>
+                  </div>
+                  <span class="taux-pct">{{ ((s.autoEmploi + s.emploiSalarie) / s.total * 100).toFixed(0) }}%</span>
+                </span>
+              </div>
+            </div>
+
+          </mat-tab>
+
+          <!-- TAB 3 : PARTENAIRES -->
+          <mat-tab label="Partenaires">
+
+            <div class="form-section" *ngIf="showForm && activeTab === 2">
+              <h3 class="form-title"><mat-icon>add_circle</mat-icon> Nouveau partenaire</h3>
+              <form [formGroup]="partenaireForm" (ngSubmit)="submitPartenaire()">
+                <div class="form-row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Nom *</mat-label>
+                    <input matInput formControlName="nom">
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Secteur *</mat-label>
+                    <input matInput formControlName="secteur">
+                  </mat-form-field>
+                </div>
+                <div class="form-row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Type *</mat-label>
+                    <mat-select formControlName="type">
+                      <mat-option value="ENTREPRISE">Entreprise</mat-option>
+                      <mat-option value="ONG">ONG</mat-option>
+                      <mat-option value="INSTITUTION">Institution</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Contact *</mat-label>
+                    <input matInput formControlName="contact">
+                  </mat-form-field>
+                </div>
+                <div class="form-row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Email *</mat-label>
+                    <input matInput formControlName="email" type="email">
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Téléphone</mat-label>
+                    <input matInput formControlName="telephone">
+                  </mat-form-field>
+                </div>
+                <div class="form-actions">
+                  <button mat-stroked-button type="button" (click)="showForm = false">Annuler</button>
+                  <button mat-raised-button class="save-btn" type="submit">
+                    <mat-icon>save</mat-icon> Enregistrer
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <div class="tab-toolbar">
+              <div class="search-box">
+                <mat-icon>search</mat-icon>
+                <input type="text" placeholder="Rechercher un partenaire..." [(ngModel)]="searchPartenaire">
+              </div>
+              <div class="filter-chips">
+                <button class="filter-chip" [class.active]="filtreTypePartenaire === 'TOUS'" (click)="filtreTypePartenaire = 'TOUS'">Tous</button>
+                <button class="filter-chip" [class.active]="filtreTypePartenaire === 'ENTREPRISE'" (click)="filtreTypePartenaire = 'ENTREPRISE'">Entreprises</button>
+                <button class="filter-chip" [class.active]="filtreTypePartenaire === 'ONG'" (click)="filtreTypePartenaire = 'ONG'">ONG</button>
+                <button class="filter-chip" [class.active]="filtreTypePartenaire === 'INSTITUTION'" (click)="filtreTypePartenaire = 'INSTITUTION'">Institutions</button>
+              </div>
+              <button class="add-btn-small" (click)="showForm = !showForm">
+                <mat-icon>add</mat-icon> Nouveau
+              </button>
+            </div>
+
+            <div class="partenaires-grid">
+              <div class="partenaire-card" *ngFor="let p of partenairesFiltres">
+                <div class="partenaire-top">
+                  <div class="partenaire-icon" [style.background]="getTypePartenaireBg(p.type)" [style.color]="getTypePartenaire(p.type)">
+                    <mat-icon>{{ p.type === 'ONG' ? 'volunteer_activism' : p.type === 'INSTITUTION' ? 'account_balance' : 'business' }}</mat-icon>
+                  </div>
+                  <div class="partenaire-info">
+                    <h4>{{ p.nom }}</h4>
+                    <span>{{ p.secteur }}</span>
+                  </div>
+                  <div class="partenaire-badges">
+                    <span class="type-badge" [style.background]="getTypePartenaireBg(p.type)" [style.color]="getTypePartenaire(p.type)">{{ p.type }}</span>
+                    <span class="statut-badge" [ngClass]="getStatutColor(p.statut)">{{ getStatutLabel(p.statut) }}</span>
+                  </div>
+                </div>
+                <div class="partenaire-details">
+                  <div class="detail-item">
+                    <mat-icon>person</mat-icon><span>{{ p.contact }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <mat-icon>email</mat-icon><span>{{ p.email }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <mat-icon>phone</mat-icon><span>{{ p.telephone }}</span>
+                  </div>
+                </div>
+                <div class="partenaire-footer">
+                  <div class="partenaire-stats">
+                    <span><mat-icon>description</mat-icon>{{ p.conventions }} convention(s)</span>
+                    <span><mat-icon>people</mat-icon>{{ p.stagiaires }} stagiaire(s)</span>
+                  </div>
+                  <button class="action-btn contact-btn">
+                    <mat-icon>mail</mat-icon> Contacter
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </mat-tab>
+
+        </mat-tab-group>
+      </div>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

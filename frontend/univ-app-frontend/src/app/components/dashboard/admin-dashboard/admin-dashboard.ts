@@ -50,7 +50,8 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
     { icon: 'people', label: 'Étudiants', route: '/etudiants' },
     { icon: 'school', label: 'Formations', route: '/formations' },
     { icon: 'campaign', label: 'Communication', route: '/communication' },
-    { icon: 'admin_panel_settings', label: 'Administration', route: '/administration' }
+    { icon: 'admin_panel_settings', label: 'Administration', route: '/administration' },
+    { icon: 'work', label: 'Insertion', route: '/insertion' }
   ];
 
   quickAccess = [
