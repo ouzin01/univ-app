@@ -3,172 +3,164 @@
     <div class="sidenav-header">
       <img src="logo.png" alt="UNCHK Logo" class="logo">
     </div>
-
     <mat-nav-list>
-      <mat-list-item *ngFor="let item of menuItems" [routerLink]="item.route" routerLinkActive="active-link">
-        <mat-icon matListItemIcon>{{item.icon}}</mat-icon>
-        <span matListItemTitle>{{item.label}}</span>
+      <mat-list-item *ngFor="let item of menuItems"
+        [routerLink]="item.route"
+        routerLinkActive="active-link"
+        [routerLinkActiveOptions]="{exact: item.route === '/admin'}">
+        <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+        <span matListItemTitle>{{ item.label }}</span>
       </mat-list-item>
     </mat-nav-list>
   </mat-sidenav>
 
   <mat-sidenav-content>
     <mat-toolbar class="toolbar">
+      <span class="spacer"></span>
       <span class="toolbar-title">Tableau de bord</span>
       <span class="spacer"></span>
       <app-navbar></app-navbar>
     </mat-toolbar>
 
     <div class="content">
-      <h2 class="welcome">Bienvenue sur la plateforme UNCHK</h2>
 
-      <!-- STATS -->
-      <div class="stats-grid">
-        <div *ngFor="let stat of stats" class="stat-card">
-          <div class="stat-content">
-            <div class="stat-info">
-              <p class="stat-label">{{stat.label}}</p>
-              <h3 class="stat-value">{{stat.value}}</h3>
+      <div class="welcome">
+        <h2>Bonjour, Amadou 👋</h2>
+        <p>Lundi 07 Juin 2026 · Voici le résumé de votre université</p>
+      </div>
+
+      <!-- KPI -->
+      <div class="kpi-grid">
+        <div class="kpi-card" *ngFor="let k of kpis">
+          <div class="kpi-top">
+            <div class="kpi-icon"><mat-icon>{{ k.icon }}</mat-icon></div>
+            <span class="kpi-trend" [ngClass]="k.up ? 'trend-up' : 'trend-down'">{{ k.trend }}</span>
+          </div>
+          <div class="kpi-value">{{ k.value }}</div>
+          <div class="kpi-label">{{ k.label }}</div>
+        </div>
+      </div>
+
+      <!-- GRAPHIQUE + INSERTION -->
+      <div class="mid-grid">
+        <div class="card chart-card">
+          <div class="card-header">
+            <h3><mat-icon>bar_chart</mat-icon> Étudiants par formation</h3>
+            <div class="chart-legend">
+              <span><span class="legend-dot" style="background:#006064"></span>Hommes</span>
+              <span><span class="legend-dot" style="background:#e65100"></span>Femmes</span>
             </div>
-            <mat-icon class="stat-icon">{{stat.icon}}</mat-icon>
+          </div>
+          <div class="chart-wrap">
+            <canvas #formChart></canvas>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3><mat-icon>work</mat-icon> Insertion pro</h3>
+          </div>
+          <div class="insertion-stats">
+            <div class="stat-row" *ngFor="let s of statsInsertion">
+              <div class="stat-label-sm">{{ s.label }}</div>
+              <div class="stat-bar">
+                <div class="stat-fill" [style.width]="s.pct + '%'" [style.background]="s.couleur"></div>
+              </div>
+              <div class="stat-val">{{ s.value }}</div>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- ACCES RAPIDES -->
-      <div class="section-title">
-        <mat-icon>flash_on</mat-icon>
-        <h3>Accès rapides</h3>
-      </div>
-      <div class="quick-access-grid">
-        <button *ngFor="let qa of quickAccess" mat-raised-button class="quick-btn" [routerLink]="qa.route">
-          <mat-icon>{{qa.icon}}</mat-icon>
-          <span>{{qa.label}}</span>
-        </button>
-      </div>
-
-      <!-- GRAPHIQUES + ACTIVITES -->
+      <!-- ACTIVITES + ALERTES -->
       <div class="bottom-grid">
-
-        <!-- GRAPHIQUES -->
-        <div class="charts-col">
-          <div class="chart-card">
-            <h3>Étudiants par formation</h3>
-            <canvas #barChart></canvas>
+        <div class="card">
+          <div class="card-header">
+            <h3><mat-icon>history</mat-icon> Activités récentes</h3>
+            <button class="see-all">Tout voir</button>
           </div>
-          <div class="chart-card">
-            <h3>Insertion professionnelle</h3>
-            <canvas #pieChart></canvas>
+          <div class="activity-list">
+            <div class="activity-item" *ngFor="let a of activites">
+              <div class="act-dot" [style.background]="a.couleur"></div>
+              <div class="act-text">{{ a.texte }}</div>
+              <div class="act-time">{{ a.temps }}</div>
+            </div>
           </div>
         </div>
 
-        <!-- COLONNE DROITE -->
-        <div class="right-col">
-          <div class="activity-card">
-            <div class="card-header">
-              <mat-icon>history</mat-icon>
-              <h3>Activités récentes</h3>
-            </div>
-            <div class="activity-list">
-              <div *ngFor="let a of activites" class="activity-item">
-                <div class="activity-icon" [ngClass]="a.type">
-                  <mat-icon>{{a.icon}}</mat-icon>
-                </div>
-                <div class="activity-info">
-                  <p>{{a.message}}</p>
-                  <span>{{a.time}}</span>
-                </div>
-              </div>
-            </div>
+        <div class="card">
+          <div class="card-header">
+            <h3><mat-icon>notifications</mat-icon> Alertes & rappels</h3>
+            <span class="badge-danger-sm">{{ alertes.length }}</span>
           </div>
-
-          <div class="alertes-card">
-            <div class="card-header">
-              <mat-icon>warning</mat-icon>
-              <h3>Alertes</h3>
-            </div>
-            <div class="alerte-list">
-              <div *ngFor="let a of alertes" class="alerte-item" [ngClass]="a.niveau">
-                <mat-icon>{{a.icon}}</mat-icon>
-                <div class="alerte-info">
-                  <p>{{a.message}}</p>
-                  <span>{{a.date}}</span>
-                </div>
+          <div class="alertes-list">
+            <div class="alerte-item" *ngFor="let a of alertes"
+              [style.background]="getAlerteBg(a.type)">
+              <div class="alerte-icon" [style.background]="getAlerteBg(a.type)" [style.color]="getAlerteColor(a.type)">
+                <mat-icon>{{ a.icon }}</mat-icon>
               </div>
+              <div class="alerte-text">
+                <h4>{{ a.titre }}</h4>
+                <p>{{ a.desc }}</p>
+              </div>
+              <span class="mini-badge" [ngClass]="getAlerteBadgeClass(a.type)">{{ a.badge }}</span>
             </div>
           </div>
         </div>
       </div>
 
       <!-- CALENDRIER -->
-      <div class="section-title" style="margin-top: 12px;">
-        <mat-icon>calendar_month</mat-icon>
-        <h3>Agenda — {{moisAffiche}}</h3>
-        <div class="cal-nav">
-          <button mat-icon-button (click)="moisPrecedent()" class="cal-nav-btn">
-            <mat-icon>chevron_left</mat-icon>
-          </button>
-          <button mat-icon-button (click)="moisSuivant()" class="cal-nav-btn">
-            <mat-icon>chevron_right</mat-icon>
-          </button>
-        </div>
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">
+    <h3><mat-icon>calendar_month</mat-icon> Calendrier — {{ calendrier.mois }}</h3>
+    <div class="cal-legend">
+      <span><span class="cal-dot today-dot"></span>Aujourd'hui</span>
+      <span><span class="cal-dot reunion-dot"></span>Réunion</span>
+      <span><span class="cal-dot examen-dot"></span>Examen</span>
+      <span><span class="cal-dot urgent-dot"></span>Urgent</span>
+    </div>
+  </div>
+
+  <div class="cal-wrapper">
+    <div class="cal-grid">
+      <div class="cal-header" *ngFor="let j of ['L','M','M','J','V','S','D']">{{ j }}</div>
+      <div class="cal-day other" *ngFor="let d of calendrier.joursPrecedents">{{ d }}</div>
+      <div class="cal-day"
+        *ngFor="let j of calendrier.jours"
+        [class.today]="j.isToday"
+        [class.has-reunion]="j.type === 'reunion'"
+        [class.has-conseil]="j.type === 'conseil'"
+        [class.has-pedago]="j.type === 'pedago'"
+        [class.has-examen]="j.type === 'examen'"
+        [class.has-urgent]="j.type === 'urgent'"
+        [class.has-seminaire]="j.type === 'seminaire'"
+        [class.selected]="jourSelectionne?.num === j.num"
+        (click)="selectionnerJour(j)"
+        [matTooltip]="j.event || ''"
+        matTooltipPosition="above">
+        {{ j.num }}
+        <span class="event-indicator" *ngIf="j.hasEvent"></span>
       </div>
+    </div>
 
-      <div class="calendrier-grid">
-        <div class="calendrier-card">
-          <div class="cal-jours-header">
-            <span *ngFor="let j of joursHeader">{{j}}</span>
-          </div>
-          <div class="cal-jours">
-            <div *ngFor="let jour of jours" class="cal-jour"
-              [ngClass]="{
-                'vide': !jour.actif,
-                'aujourd-hui': jour.estAujourdhui,
-                'selectionne': jour.selectionne,
-                'a-evenement': jour.evenements.length > 0
-              }"
-              (click)="selectionnerJour(jour)">
-              <span class="num">{{jour.actif ? jour.num : ''}}</span>
-              <div class="evt-dots">
-                <span *ngFor="let e of jour.evenements.slice(0,3)" class="dot" [ngClass]="e.type"></span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="evenements-card">
-          <div class="card-header">
-            <mat-icon>event</mat-icon>
-            <h3>{{jourSelectionne ? 'Événements du ' + jourSelectionne.num + ' ' + moisAffiche : 'Sélectionnez un jour'}}</h3>
-          </div>
-
-          <div *ngIf="jourSelectionne && jourSelectionne.evenements.length > 0" class="evt-list">
-            <div *ngFor="let e of jourSelectionne.evenements" class="evt-item" [ngClass]="e.type">
-              <div class="evt-heure">{{e.heure}}</div>
-              <div class="evt-info">
-                <p>{{e.titre}}</p>
-                <span>{{e.lieu}}</span>
-              </div>
-              <span class="evt-badge" [ngClass]="e.type">{{e.type}}</span>
-            </div>
-          </div>
-
-          <div *ngIf="jourSelectionne && jourSelectionne.evenements.length === 0" class="evt-empty">
-            <mat-icon>event_available</mat-icon>
-            <p>Aucun événement ce jour</p>
-          </div>
-
-          <div *ngIf="!jourSelectionne" class="evt-empty">
-            <mat-icon>calendar_today</mat-icon>
-            <p>Cliquez sur un jour pour voir les événements</p>
-          </div>
-
-          <button mat-raised-button class="add-evt-btn" *ngIf="jourSelectionne" (click)="ajouterEvenement()">
-            <mat-icon>add</mat-icon>
-            Ajouter un événement
-          </button>
-        </div>
+    <!-- DETAIL EVENEMENT -->
+    <div class="event-detail" *ngIf="jourSelectionne">
+      <div class="event-detail-header" [ngClass]="'event-' + jourSelectionne.type">
+        <mat-icon>{{ jourSelectionne.type === 'urgent' ? 'warning' :
+                      jourSelectionne.type === 'conseil' ? 'account_balance' :
+                      jourSelectionne.type === 'examen' ? 'assignment' :
+                      jourSelectionne.type === 'pedago' ? 'menu_book' :
+                      jourSelectionne.type === 'seminaire' ? 'school' : 'event' }}</mat-icon>
+        <span>{{ jourSelectionne.num }} {{ calendrier.mois }}</span>
       </div>
+      <p class="event-detail-text">{{ jourSelectionne.event }}</p>
+    </div>
+    <div class="event-detail-empty" *ngIf="!jourSelectionne">
+      <mat-icon>touch_app</mat-icon>
+      <span>Cliquez sur un jour avec événement</span>
+    </div>
+  </div>
+</div>
 
     </div>
   </mat-sidenav-content>
