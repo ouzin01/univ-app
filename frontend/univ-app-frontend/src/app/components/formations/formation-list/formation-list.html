@@ -1,74 +1,580 @@
-<mat-toolbar color="primary">
-  <button mat-icon-button (click)="retour()">
-    <mat-icon>arrow_back</mat-icon>
-  </button>
-  <span>Gestion des Formations</span>
-  <span class="spacer"></span>
-  <button mat-raised-button (click)="nouvelleFormation()">
-    <mat-icon>add</mat-icon> Nouvelle Formation
-  </button>
-</mat-toolbar>
+<mat-sidenav-container class="sidenav-container">
+  <mat-sidenav mode="side" opened class="sidenav">
+    <div class="sidenav-header">
+      <img src="logo.png" alt="UNCHK Logo" class="logo">
+    </div>
+    <mat-nav-list>
+      <mat-list-item *ngFor="let item of menuItems"
+        [routerLink]="item.route"
+        routerLinkActive="active-link"
+        [routerLinkActiveOptions]="{exact: item.route === '/admin'}">
+        <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+        <span matListItemTitle>{{ item.label }}</span>
+      </mat-list-item>
+    </mat-nav-list>
+  </mat-sidenav>
 
-<div class="content">
-  <mat-card class="filter-card">
-    <mat-form-field appearance="outline" class="search-field">
-      <mat-label>Rechercher une formation</mat-label>
-      <input matInput [(ngModel)]="searchQuery" (input)="filterFormations()" placeholder="Intitulé, niveau...">
-      <mat-icon matSuffix>search</mat-icon>
-    </mat-form-field>
-  </mat-card>
+  <mat-sidenav-content>
+    <mat-toolbar class="toolbar">
+      <span class="spacer"></span>
+      <span class="toolbar-title">Formations</span>
+      <span class="spacer"></span>
+      <app-navbar></app-navbar>
+    </mat-toolbar>
 
-  <mat-card>
-    <mat-card-content>
-      <table mat-table [dataSource]="filteredFormations" class="full-width">
+    <div class="content">
 
-        <ng-container matColumnDef="intitule">
-          <th mat-header-cell *matHeaderCellDef>Intitulé</th>
-          <td mat-cell *matCellDef="let f">{{ f.intitule }}</td>
-        </ng-container>
+      <div class="stats-grid">
+        <div class="stat-card" *ngFor="let stat of stats">
+          <div class="stat-content">
+            <div>
+              <p class="stat-label">{{ stat.label }}</p>
+              <h3 class="stat-value">{{ stat.value }}</h3>
+            </div>
+            <mat-icon class="stat-icon">{{ stat.icon }}</mat-icon>
+          </div>
+        </div>
+      </div>
 
-        <ng-container matColumnDef="niveauEtudes">
-          <th mat-header-cell *matHeaderCellDef>Niveau</th>
-          <td mat-cell *matCellDef="let f">{{ f.niveauEtudes }}</td>
-        </ng-container>
+      <div class="formation-container">
+        <mat-tab-group [(selectedIndex)]="activeTab" class="main-tabs">
 
-        <ng-container matColumnDef="typeFormation">
-          <th mat-header-cell *matHeaderCellDef>Type</th>
-          <td mat-cell *matCellDef="let f">
-            <mat-chip>{{ f.typeFormation }}</mat-chip>
-          </td>
-        </ng-container>
+          <!-- TAB 1 : FORMATIONS -->
+          <mat-tab label="Formations">
 
-        <ng-container matColumnDef="responsable">
-          <th mat-header-cell *matHeaderCellDef>Responsable</th>
-          <td mat-cell *matCellDef="let f">{{ f.responsableFormation }}</td>
-        </ng-container>
+            <div class="form-section" *ngIf="showForm && activeTab === 0">
+              <h3 class="form-title"><mat-icon>add_circle</mat-icon> Nouvelle formation</h3>
+              <form [formGroup]="formationForm" (ngSubmit)="submitFormation()">
+                <div class="form-row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Nom *</mat-label>
+                    <input matInput formControlName="nom">
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Code *</mat-label>
+                    <input matInput formControlName="code">
+                  </mat-form-field>
+                </div>
+                <div class="form-row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Type *</mat-label>
+                    <mat-select formControlName="type">
+                      <mat-option value="DIPLOME">Diplôme</mat-option>
+                      <mat-option value="CERTIFICATION">Certification</mat-option>
+                      <mat-option value="FORMATION_CONTINUE">Formation continue</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Niveau *</mat-label>
+                    <input matInput formControlName="niveau">
+                  </mat-form-field>
+                </div>
+                <div class="form-row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Date début *</mat-label>
+                    <input matInput formControlName="debut" type="date">
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Date fin *</mat-label>
+                    <input matInput formControlName="fin" type="date">
+                  </mat-form-field>
+                </div>
+                <div class="form-row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Financement *</mat-label>
+                    <mat-select formControlName="financement">
+                      <mat-option value="PUBLIC">Public</mat-option>
+                      <mat-option value="PRIVE">Privé</mat-option>
+                      <mat-option value="MIXTE">Mixte</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Montant (FCFA)</mat-label>
+                    <input matInput formControlName="montant" type="number">
+                  </mat-form-field>
+                </div>
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Description</mat-label>
+                  <textarea matInput formControlName="description" rows="3"></textarea>
+                </mat-form-field>
+                <div class="form-actions">
+                  <button mat-stroked-button type="button" (click)="showForm = false">Annuler</button>
+                  <button mat-raised-button class="save-btn" type="submit">
+                    <mat-icon>save</mat-icon> Enregistrer
+                  </button>
+                </div>
+              </form>
+            </div>
 
-        <ng-container matColumnDef="apprenants">
-          <th mat-header-cell *matHeaderCellDef>Apprenants</th>
-          <td mat-cell *matCellDef="let f">
-            👨 {{ f.nbApprenantsHommes }} / 👩 {{ f.nbApprenantsFemmes }}
-          </td>
-        </ng-container>
+            <div class="tab-toolbar">
+              <div class="search-box">
+                <mat-icon>search</mat-icon>
+                <input type="text" placeholder="Rechercher une formation..." [(ngModel)]="searchFormation">
+              </div>
+              <div class="filter-chips">
+                <button class="filter-chip" [class.active]="filtreTypeFormation === 'TOUS'" (click)="filtreTypeFormation = 'TOUS'">Tous</button>
+                <button class="filter-chip" [class.active]="filtreTypeFormation === 'DIPLOME'" (click)="filtreTypeFormation = 'DIPLOME'">Diplômes</button>
+                <button class="filter-chip" [class.active]="filtreTypeFormation === 'CERTIFICATION'" (click)="filtreTypeFormation = 'CERTIFICATION'">Certifications</button>
+                <button class="filter-chip" [class.active]="filtreTypeFormation === 'FORMATION_CONTINUE'" (click)="filtreTypeFormation = 'FORMATION_CONTINUE'">Continues</button>
+              </div>
+              <button class="add-btn-small" (click)="showForm = !showForm">
+                <mat-icon>add</mat-icon> Nouvelle
+              </button>
+            </div>
 
-        <ng-container matColumnDef="actions">
-          <th mat-header-cell *matHeaderCellDef>Actions</th>
-          <td mat-cell *matCellDef="let f">
-            <button mat-icon-button color="warn" (click)="supprimerFormation(f.id)">
-              <mat-icon>delete</mat-icon>
-            </button>
-          </td>
-        </ng-container>
+            <div class="formations-grid">
+              <div class="formation-card" *ngFor="let f of formationsFiltrees">
+                <div class="formation-header">
+                  <div class="formation-icon">
+                    <mat-icon>{{ f.type === 'CERTIFICATION' ? 'verified' : f.type === 'FORMATION_CONTINUE' ? 'auto_stories' : 'school' }}</mat-icon>
+                  </div>
+                  <div class="formation-title">
+                    <h4>{{ f.nom }}</h4>
+                    <span class="formation-code">{{ f.code }}</span>
+                  </div>
+                  <div class="formation-badges">
+                    <span class="type-badge" [ngClass]="getTypeFormationColor(f.type)">{{ getTypeFormationLabel(f.type) }}</span>
+                    <span class="statut-badge" [ngClass]="getStatutColor(f.statut)">{{ getStatutLabel(f.statut) }}</span>
+                  </div>
+                </div>
 
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                <p class="formation-desc">{{ f.description }}</p>
 
-        <tr class="mat-row" *matNoDataRow>
-          <td class="mat-cell" colspan="6" style="text-align:center; padding: 2rem;">
-            Aucune formation trouvée
-          </td>
-        </tr>
-      </table>
-    </mat-card-content>
-  </mat-card>
+                <div class="formation-details">
+                  <div class="detail-row">
+                    <div class="detail-item">
+                      <mat-icon>grade</mat-icon>
+                      <span>{{ f.niveau }}</span>
+                    </div>
+                    <div class="detail-item">
+                      <mat-icon>calendar_today</mat-icon>
+                      <span>{{ f.debut | date:'MMM yyyy' }} → {{ f.fin | date:'MMM yyyy' }}</span>
+                    </div>
+                  </div>
+                  <div class="detail-row">
+                    <div class="detail-item">
+                      <mat-icon>account_balance_wallet</mat-icon>
+                      <span class="financement-badge" [ngClass]="getFinancementColor(f.financement)">
+                        {{ f.financement }}
+                        <span *ngIf="f.montant"> — {{ f.montant | number }} FCFA</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- GENRE -->
+                <div class="genre-section">
+                  <div class="genre-bar">
+                    <div class="genre-label">
+                      <mat-icon>people</mat-icon>
+                      <span>{{ f.total }} formés</span>
+                    </div>
+                    <div class="genre-progress">
+                      <div class="genre-fill hommes" [style.width]="(f.hommes/f.total*100) + '%'"></div>
+                      <div class="genre-fill femmes" [style.width]="(f.femmes/f.total*100) + '%'"></div>
+                    </div>
+                    <div class="genre-stats">
+                      <span class="homme-stat"><mat-icon>male</mat-icon>{{ f.hommes }}</span>
+                      <span class="femme-stat"><mat-icon>female</mat-icon>{{ f.femmes }}</span>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </mat-tab>
+
+          <!-- TAB 2 : EMPLOI DU TEMPS -->
+          <mat-tab label="Emploi du temps">
+
+            <div class="tab-toolbar">
+              <h3 class="section-title-toolbar">Semaine du 09 au 13 Juin 2026</h3>
+              <div class="filter-chips">
+                <button class="filter-chip" [class.active]="jourFiltreEmploi === 'TOUS'" (click)="jourFiltreEmploi = 'TOUS'">Tous</button>
+                <button class="filter-chip" *ngFor="let j of joursEmploi"
+                  [class.active]="jourFiltreEmploi === j" (click)="jourFiltreEmploi = j">{{ j }}</button>
+              </div>
+            </div>
+
+            <!-- GRILLE EMPLOI DU TEMPS -->
+            <div class="emploi-grille" *ngIf="jourFiltreEmploi === 'TOUS'">
+              <div class="emploi-col" *ngFor="let jour of joursEmploi">
+                <div class="emploi-jour-header">{{ jour }}</div>
+                <div class="emploi-cours-list">
+                  <div class="cours-card" *ngFor="let c of getCoursParJour(jour)"
+                    [style.border-left-color]="c.couleur">
+                    <div class="cours-time">{{ c.debut }} — {{ c.fin }}</div>
+                    <div class="cours-matiere" [style.color]="c.couleur">{{ c.matiere }}</div>
+                    <div class="cours-formateur"><mat-icon>person</mat-icon>{{ c.formateur }}</div>
+                    <div class="cours-meta">
+                      <span><mat-icon>room</mat-icon>{{ c.salle }}</span>
+                      <span class="cours-code">{{ c.formation }}</span>
+                    </div>
+                  </div>
+                  <div class="no-cours" *ngIf="getCoursParJour(jour).length === 0">
+                    <mat-icon>event_available</mat-icon>
+                    <p>Libre</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- VUE FILTRÉE PAR JOUR -->
+            <div class="emploi-list" *ngIf="jourFiltreEmploi !== 'TOUS'">
+              <div class="cours-card-large" *ngFor="let c of emploiFiltre"
+                [style.border-left-color]="c.couleur">
+                <div class="cours-large-left">
+                  <div class="cours-time-large" [style.color]="c.couleur">{{ c.debut }} — {{ c.fin }}</div>
+                  <div class="cours-matiere-large">{{ c.matiere }}</div>
+                </div>
+                <div class="cours-large-right">
+                  <div class="cours-detail"><mat-icon>person</mat-icon>{{ c.formateur }}</div>
+                  <div class="cours-detail"><mat-icon>room</mat-icon>{{ c.salle }}</div>
+                  <div class="cours-detail"><mat-icon>school</mat-icon>{{ c.formation }}</div>
+                </div>
+              </div>
+              <div class="empty-state" *ngIf="emploiFiltre.length === 0">
+                <mat-icon>event_available</mat-icon>
+                <p>Aucun cours ce jour</p>
+              </div>
+            </div>
+
+          </mat-tab>
+
+          <!-- TAB 3 : FORMATEURS -->
+          <mat-tab label="Formateurs">
+
+            <div class="form-section" *ngIf="showForm && activeTab === 2">
+              <h3 class="form-title"><mat-icon>person_add</mat-icon> Nouveau formateur</h3>
+              <form [formGroup]="formateurForm" (ngSubmit)="submitFormateur()">
+                <div class="form-row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Nom complet *</mat-label>
+                    <input matInput formControlName="nom">
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Type *</mat-label>
+                    <mat-select formControlName="type">
+                      <mat-option value="ENSEIGNANT">Enseignant</mat-option>
+                      <mat-option value="ENSEIGNANT_ASSOCIE">Enseignant associé</mat-option>
+                      <mat-option value="TUTEUR">Tuteur</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+                <div class="form-row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Spécialité *</mat-label>
+                    <input matInput formControlName="specialite">
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Email *</mat-label>
+                    <input matInput formControlName="email" type="email">
+                  </mat-form-field>
+                </div>
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Téléphone</mat-label>
+                  <input matInput formControlName="telephone">
+                </mat-form-field>
+                <div class="form-actions">
+                  <button mat-stroked-button type="button" (click)="showForm = false">Annuler</button>
+                  <button mat-raised-button class="save-btn" type="submit">
+                    <mat-icon>save</mat-icon> Enregistrer
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <div class="tab-toolbar">
+              <div class="search-box">
+                <mat-icon>search</mat-icon>
+                <input type="text" placeholder="Rechercher un formateur..." [(ngModel)]="searchFormateur">
+              </div>
+              <div class="filter-chips">
+                <button class="filter-chip" [class.active]="filtreTypeFormateur === 'TOUS'" (click)="filtreTypeFormateur = 'TOUS'">Tous</button>
+                <button class="filter-chip" [class.active]="filtreTypeFormateur === 'ENSEIGNANT'" (click)="filtreTypeFormateur = 'ENSEIGNANT'">Enseignants</button>
+                <button class="filter-chip" [class.active]="filtreTypeFormateur === 'ENSEIGNANT_ASSOCIE'" (click)="filtreTypeFormateur = 'ENSEIGNANT_ASSOCIE'">Associés</button>
+                <button class="filter-chip" [class.active]="filtreTypeFormateur === 'TUTEUR'" (click)="filtreTypeFormateur = 'TUTEUR'">Tuteurs</button>
+              </div>
+              <button class="add-btn-small" (click)="showForm = !showForm">
+                <mat-icon>add</mat-icon> Ajouter
+              </button>
+            </div>
+
+            <div class="formateurs-grid">
+              <div class="formateur-card" *ngFor="let f of formateursFiltres">
+                <div class="formateur-top">
+                  <div class="avatar" [style.background]="getTypeFormateurBg(f.type)" [style.color]="getTypeFormateurColor(f.type)">
+                    {{ f.initiales }}
+                  </div>
+                  <div class="formateur-info">
+                    <h4>{{ f.nom }}</h4>
+                    <span>{{ f.specialite }}</span>
+                  </div>
+                  <div class="formateur-badges">
+                    <span class="type-badge-small" [style.background]="getTypeFormateurBg(f.type)" [style.color]="getTypeFormateurColor(f.type)">
+                      {{ f.type === 'ENSEIGNANT_ASSOCIE' ? 'Associé' : f.type }}
+                    </span>
+                    <span class="statut-badge" [ngClass]="getStatutColor(f.statut)">{{ getStatutLabel(f.statut) }}</span>
+                  </div>
+                </div>
+                <div class="formateur-contact">
+                  <span><mat-icon>email</mat-icon>{{ f.email }}</span>
+                  <span><mat-icon>phone</mat-icon>{{ f.telephone }}</span>
+                </div>
+                <div class="formateur-formations">
+                  <mat-icon>school</mat-icon>
+                  <span *ngFor="let code of f.formations" class="formation-chip">{{ code }}</span>
+                </div>
+              </div>
+            </div>
+          </mat-tab>
+
+          <!-- TAB 4 : REUNIONS TUTORAT -->
+          <mat-tab label="Tutorat">
+
+            <div class="form-section" *ngIf="showForm && activeTab === 3">
+              <h3 class="form-title"><mat-icon>add_circle</mat-icon> Nouvelle réunion tutorat</h3>
+              <form [formGroup]="reunionForm" (ngSubmit)="submitReunion()">
+                <div class="form-row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Titre *</mat-label>
+                    <input matInput formControlName="titre">
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Formation *</mat-label>
+                    <input matInput formControlName="formation">
+                  </mat-form-field>
+                </div>
+                <div class="form-row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Tuteur/Responsable *</mat-label>
+                    <input matInput formControlName="formateur">
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Date *</mat-label>
+                    <input matInput formControlName="date" type="datetime-local">
+                  </mat-form-field>
+                </div>
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Ordre du jour</mat-label>
+                  <textarea matInput formControlName="ordre_jour" rows="3"></textarea>
+                </mat-form-field>
+                <div class="form-actions">
+                  <button mat-stroked-button type="button" (click)="showForm = false">Annuler</button>
+                  <button mat-raised-button class="save-btn" type="submit">
+                    <mat-icon>save</mat-icon> Enregistrer
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <div class="tab-toolbar">
+              <h3 class="section-title-toolbar">Réunions de suivi tutorat</h3>
+              <button class="add-btn-small" (click)="showForm = !showForm" style="margin-left:auto;">
+                <mat-icon>add</mat-icon> Planifier
+              </button>
+            </div>
+
+            <div class="reunions-grid">
+
+  <!-- TERMINEES (gauche) -->
+  <div class="reunion-col">
+    <div class="reunion-col-header passees">
+      <mat-icon>history</mat-icon>
+      <h3>Terminées</h3>
+      <span class="count-badge">{{ reunionsTutorat.filter(r => r.statut === 'TERMINE').length }}</span>
+    </div>
+    <div class="reunions-list">
+      <div class="reunion-card" *ngFor="let r of reunionsTutorat" [class.hidden]="r.statut !== 'TERMINE'">
+        <div class="reunion-top" *ngIf="r.statut === 'TERMINE'">
+          <div class="reunion-icon tutorat"><mat-icon>supervisor_account</mat-icon></div>
+          <div class="reunion-info">
+            <h4>{{ r.titre }}</h4>
+            <span>{{ r.tuteur }}</span>
+            <span class="reunion-formation"><mat-icon>school</mat-icon>{{ r.formation }}</span>
+          </div>
+          <button mat-icon-button matTooltip="Télécharger CR">
+            <mat-icon>picture_as_pdf</mat-icon>
+          </button>
+        </div>
+        <div class="reunion-details" *ngIf="r.statut === 'TERMINE'">
+          <div class="reunion-detail"><mat-icon>calendar_today</mat-icon>{{ r.date | date:'dd MMM yyyy' }}</div>
+          <div class="reunion-detail"><mat-icon>people</mat-icon>{{ r.participants }} participants</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- A VENIR (droite) -->
+  <div class="reunion-col">
+    <div class="reunion-col-header avenir">
+      <mat-icon>event</mat-icon>
+      <h3>À venir</h3>
+      <span class="count-badge avenir">{{ reunionsTutorat.filter(r => r.statut === 'PLANIFIE').length }}</span>
+    </div>
+    <div class="reunions-list">
+      <div class="reunion-card avenir-card" *ngFor="let r of reunionsTutorat" [class.hidden]="r.statut !== 'PLANIFIE'">
+        <div class="reunion-top" *ngIf="r.statut === 'PLANIFIE'">
+          <div class="reunion-icon tutorat"><mat-icon>supervisor_account</mat-icon></div>
+          <div class="reunion-info">
+            <h4>{{ r.titre }}</h4>
+            <span>{{ r.tuteur }}</span>
+            <span class="reunion-formation"><mat-icon>school</mat-icon>{{ r.formation }}</span>
+          </div>
+          <button mat-icon-button
+            [class.rappel-actif]="rappelsActives.has(r.id)"
+            (click)="toggleRappel(r.id)"
+            [matTooltip]="rappelsActives.has(r.id) ? 'Rappel activé' : 'Activer rappel'">
+            <mat-icon>{{ rappelsActives.has(r.id) ? 'notifications_active' : 'notifications_none' }}</mat-icon>
+          </button>
+        </div>
+        <div class="reunion-details" *ngIf="r.statut === 'PLANIFIE'">
+          <div class="reunion-detail"><mat-icon>calendar_today</mat-icon>{{ r.date | date:'dd MMM yyyy HH:mm' }}</div>
+          <div class="reunion-detail"><mat-icon>people</mat-icon>{{ r.participants }} participants</div>
+          <div class="reunion-ordre" *ngIf="r.ordre_jour"><mat-icon>list_alt</mat-icon>{{ r.ordre_jour }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
+          </mat-tab>
+
+          <!-- TAB 5 : REUNIONS PEDAGOGIQUES -->
+          <mat-tab label="Pédagogie">
+
+            <div class="form-section" *ngIf="showForm && activeTab === 4">
+              <h3 class="form-title"><mat-icon>add_circle</mat-icon> Nouvelle réunion pédagogique</h3>
+              <form [formGroup]="reunionForm" (ngSubmit)="submitReunion()">
+                <div class="form-row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Titre *</mat-label>
+                    <input matInput formControlName="titre">
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Type *</mat-label>
+                    <mat-select formControlName="type">
+                      <mat-option value="PREPARATION_COURS">Préparation cours</mat-option>
+                      <mat-option value="PREPARATION_EVAL">Préparation évaluations</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+                <div class="form-row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Formateur *</mat-label>
+                    <input matInput formControlName="formateur">
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Formation *</mat-label>
+                    <input matInput formControlName="formation">
+                  </mat-form-field>
+                </div>
+                <div class="form-row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Date *</mat-label>
+                    <input matInput formControlName="date" type="datetime-local">
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Ordre du jour</mat-label>
+                    <textarea matInput formControlName="ordre_jour" rows="2"></textarea>
+                  </mat-form-field>
+                </div>
+                <div class="form-actions">
+                  <button mat-stroked-button type="button" (click)="showForm = false">Annuler</button>
+                  <button mat-raised-button class="save-btn" type="submit">
+                    <mat-icon>save</mat-icon> Enregistrer
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <div class="tab-toolbar">
+              <h3 class="section-title-toolbar">Réunions pédagogiques</h3>
+              <button class="add-btn-small" (click)="showForm = !showForm" style="margin-left:auto;">
+                <mat-icon>add</mat-icon> Planifier
+              </button>
+            </div>
+
+            <div class="reunions-grid">
+
+              <!-- PREPARATION COURS -->
+              <div class="reunion-col">
+                <div class="reunion-col-header" style="background:#e8eaf6;">
+                  <mat-icon style="color:#3949AB;">menu_book</mat-icon>
+                  <h3 style="color:#3949AB;">Préparation cours</h3>
+                  <span class="count-badge" style="background:#3949AB;">{{ reunionsCours.length }}</span>
+                </div>
+                <div class="reunions-list">
+                  <div class="reunion-card" *ngFor="let r of reunionsCours"
+                    [class.avenir-card]="r.statut === 'PLANIFIE'">
+                    <div class="reunion-top">
+                      <div class="reunion-icon cours"><mat-icon>menu_book</mat-icon></div>
+                      <div class="reunion-info">
+                        <h4>{{ r.titre }}</h4>
+                        <span>{{ r.formateur }}</span>
+                        <span class="reunion-formation"><mat-icon>school</mat-icon>{{ r.formation }}</span>
+                      </div>
+                      <button mat-icon-button *ngIf="r.statut === 'PLANIFIE'"
+                        [class.rappel-actif]="rappelsActives.has(r.id)"
+                        (click)="toggleRappel(r.id)"
+                        [matTooltip]="rappelsActives.has(r.id) ? 'Rappel activé' : 'Activer rappel'">
+                        <mat-icon>{{ rappelsActives.has(r.id) ? 'notifications_active' : 'notifications_none' }}</mat-icon>
+                      </button>
+                      <button mat-icon-button *ngIf="r.statut === 'TERMINE'" matTooltip="Télécharger CR">
+                        <mat-icon>picture_as_pdf</mat-icon>
+                      </button>
+                    </div>
+                    <div class="reunion-details">
+                      <div class="reunion-detail"><mat-icon>calendar_today</mat-icon>{{ r.date | date:'dd MMM yyyy HH:mm' }}</div>
+                      <div class="reunion-detail"><mat-icon>people</mat-icon>{{ r.participants }} participants</div>
+                      <div class="reunion-ordre" *ngIf="r.ordre_jour"><mat-icon>list_alt</mat-icon>{{ r.ordre_jour }}</div>
+                    </div>
+                    <span class="statut-badge" [ngClass]="getStatutColor(r.statut)">{{ getStatutLabel(r.statut) }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- PREPARATION EVALUATIONS -->
+              <div class="reunion-col">
+                <div class="reunion-col-header" style="background:#fce4ec;">
+                  <mat-icon style="color:#c62828;">assignment</mat-icon>
+                  <h3 style="color:#c62828;">Préparation évaluations</h3>
+                  <span class="count-badge" style="background:#c62828;">{{ reunionsEval.length }}</span>
+                </div>
+                <div class="reunions-list">
+                  <div class="reunion-card" *ngFor="let r of reunionsEval"
+                    [class.avenir-card]="r.statut === 'PLANIFIE'">
+                    <div class="reunion-top">
+                      <div class="reunion-icon eval"><mat-icon>assignment</mat-icon></div>
+                      <div class="reunion-info">
+                        <h4>{{ r.titre }}</h4>
+                        <span>{{ r.formateur }}</span>
+                        <span class="reunion-formation"><mat-icon>school</mat-icon>{{ r.formation }}</span>
+                      </div>
+                      <button mat-icon-button *ngIf="r.statut === 'PLANIFIE'"
+                        [class.rappel-actif]="rappelsActives.has(r.id)"
+                        (click)="toggleRappel(r.id)"
+                        [matTooltip]="rappelsActives.has(r.id) ? 'Rappel activé' : 'Activer rappel'">
+                        <mat-icon>{{ rappelsActives.has(r.id) ? 'notifications_active' : 'notifications_none' }}</mat-icon>
+                      </button>
+                      <button mat-icon-button *ngIf="r.statut === 'TERMINE'" matTooltip="Télécharger CR">
+                        <mat-icon>picture_as_pdf</mat-icon>
+                      </button>
+                    </div>
+                    <div class="reunion-details">
+                      <div class="reunion-detail"><mat-icon>calendar_today</mat-icon>{{ r.date | date:'dd MMM yyyy HH:mm' }}</div>
+                      <div class="reunion-detail"><mat-icon>people</mat-icon>{{ r.participants }} participants</div>
+                      <div class="reunion-ordre" *ngIf="r.ordre_jour"><mat-icon>list_alt</mat-icon>{{ r.ordre_jour }}</div>
+                    </div>
+                    <span class="statut-badge" [ngClass]="getStatutColor(r.statut)">{{ getStatutLabel(r.statut) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </mat-tab>
+
+        </mat-tab-group>
+      </div>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>
